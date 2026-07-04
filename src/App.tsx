@@ -19,13 +19,12 @@ function AppInner() {
 
   function handleNewGame() {
     setView('setup')
-    setPlayers([])
   }
 
   return (
     <div className="min-h-dvh flex flex-col bg-slate-50 dark:bg-slate-900 transition-colors">
       <TopBar />
-      {view === 'setup' && <SetupScreen onStart={handleStart} />}
+      {view === 'setup' && <SetupScreen onStart={handleStart} initialNames={players.length ? players : undefined} />}
       {view === 'game' && <GameScreen playerNames={players} onNewGame={handleNewGame} />}
     </div>
   )

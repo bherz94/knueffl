@@ -3,15 +3,16 @@ import { useTranslation } from '../hooks/useLanguage'
 
 interface Props {
   onStart: (players: string[]) => void
+  initialNames?: string[]
 }
 
 const MIN_PLAYERS = 2
 const MAX_PLAYERS = 6
 
-export function SetupScreen({ onStart }: Props) {
+export function SetupScreen({ onStart, initialNames }: Props) {
   const { t } = useTranslation()
-  const [count, setCount] = useState(2)
-  const [names, setNames] = useState<string[]>(['', ''])
+  const [count, setCount] = useState(initialNames?.length ?? 2)
+  const [names, setNames] = useState<string[]>(initialNames ?? ['', ''])
 
   function setPlayerCount(n: number) {
     const clamped = Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, n))
