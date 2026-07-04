@@ -69,6 +69,14 @@ const en: Translations = {
   cancelConfirmYes: 'Yes, cancel',
   cancelConfirmNo: 'Keep playing',
 
+  // Virtual dice
+  virtualDice: 'Virtual dice rolling',
+  rollDice: 'Roll',
+  rollAgain: 'Roll Again',
+  finishRolling: 'Done',
+  throwNumber: (n: number, max: number) => `Throw ${n}/${max}`,
+  keepToggleHint: 'Tap a die to keep it',
+
   // Game end
   gameOver: 'Game over!',
   finalRankings: 'Final Rankings',

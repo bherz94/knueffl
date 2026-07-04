@@ -67,6 +67,14 @@ export interface Translations {
   cancelConfirmYes: string
   cancelConfirmNo: string
 
+  // Virtual dice
+  virtualDice: string
+  rollDice: string
+  rollAgain: string
+  finishRolling: string
+  throwNumber: (n: number, max: number) => string
+  keepToggleHint: string
+
   // Game end
   gameOver: string
   finalRankings: string

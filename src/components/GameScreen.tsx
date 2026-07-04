@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { CategoryMeta, ScorableCategory } from '../types/game'
 import { useGameState } from '../hooks/useGameState'
 import { useTranslation } from '../hooks/useLanguage'
 import { calcGrandTotal } from '../utils/scoring'
+import { getDiceAutoScore } from '../utils/dice'
 import { Scoreboard } from './Scoreboard'
 import { UpperInputPopup } from './UpperInputPopup'
 import { FreeInputPopup } from './FreeInputPopup'
 import { GameEndOverlay } from './GameEndOverlay'
+import { DiceModal } from './DiceModal'
 
 interface Props {
   playerNames: string[]
+  virtualDice: boolean
   onNewGame: () => void
   onCancel: () => void
 }
@@ -41,20 +44,44 @@ function calcPlacements(players: { name: string; scores: Parameters<typeof calcG
   return result
 }
 
-export function GameScreen({ playerNames, onNewGame, onCancel }: Props) {
+export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Props) {
   const { t } = useTranslation()
-  const { state, score, cross, undo, canUndo } = useGameState(playerNames)
+  const { state, score, cross, undo, setDice, canUndo } = useGameState(playerNames)
   const [popup, setPopup] = useState<ActivePopup>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [overlayOpen, setOverlayOpen] = useState(state.isGameOver)
+  const [diceModalOpen, setDiceModalOpen] = useState(false)
+
+  // diceValues lives in game state so undo restores them automatically
+  const diceValues = state.diceValues
 
   useEffect(() => {
     if (state.isGameOver) setOverlayOpen(true)
   }, [state.isGameOver])
 
+  // Auto-open dice modal on mount when no dice have been rolled yet
+  useEffect(() => {
+    if (virtualDice && !state.isGameOver && diceValues === null) setDiceModalOpen(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // When player index changes, open dice modal only if no dice were restored by undo
+  const prevPlayerIndex = useRef(state.currentPlayerIndex)
+  useEffect(() => {
+    if (prevPlayerIndex.current === state.currentPlayerIndex) return
+    prevPlayerIndex.current = state.currentPlayerIndex
+    if (virtualDice && !state.isGameOver && state.diceValues === null) setDiceModalOpen(true)
+  })
+
   const placements = state.isGameOver ? calcPlacements(state.players) : undefined
 
   function handleCellClick(playerIndex: number, meta: CategoryMeta) {
+    if (diceValues) {
+      const autoScore = getDiceAutoScore(diceValues, meta.id as ScorableCategory)
+      if (autoScore !== null) score(playerIndex, meta.id as ScorableCategory, autoScore)
+      // null = combination invalid with these dice → do nothing
+      return
+    }
     if (meta.inputKind === 'upper') {
       setPopup({ kind: 'upper', playerIndex, meta })
     } else if (meta.inputKind === 'fixed') {
@@ -84,13 +111,19 @@ export function GameScreen({ playerNames, onNewGame, onCancel }: Props) {
     closePopup()
   }
 
+  function handleDiceFinish(values: number[]) {
+    setDice(values)
+    setDiceModalOpen(false)
+  }
+
   const currentPlayer = state.players[state.currentPlayerIndex]
 
   return (
     <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900">
-      {/* Turn indicator — shown during play and when reviewing scores after game ends */}
+      {/* Turn indicator */}
       {(!state.isGameOver || !overlayOpen) && (
         <div className="bg-indigo-600 dark:bg-indigo-700 text-white flex items-center justify-between py-2 px-4 gap-3">
+          {/* Left button */}
           {state.isGameOver ? (
             <button
               type="button"
@@ -108,12 +141,28 @@ export function GameScreen({ playerNames, onNewGame, onCancel }: Props) {
               ✕ {t.cancelGame}
             </button>
           )}
-          <span className="text-sm font-semibold flex-1 text-center">
-            {state.isGameOver
-              ? `🏆 ${t.gameOver}`
-              : <>🎲 {t.currentTurn(currentPlayer.name)}<span className="ml-2 text-indigo-200 text-xs hidden sm:inline">{t.crossOutHint}</span></>
-            }
-          </span>
+
+          {/* Center */}
+          <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
+            {state.isGameOver ? (
+              <span className="text-sm font-semibold">🏆 {t.gameOver}</span>
+            ) : virtualDice ? (
+              <button
+                type="button"
+                onClick={() => setDiceModalOpen(true)}
+                className="flex items-center gap-2 text-sm font-semibold hover:opacity-80 transition-opacity"
+              >
+                🎲 {currentPlayer.name}
+              </button>
+            ) : (
+              <span className="text-sm font-semibold text-center">
+                🎲 {t.currentTurn(currentPlayer.name)}
+                <span className="ml-2 text-indigo-200 text-xs hidden sm:inline">{t.crossOutHint}</span>
+              </span>
+            )}
+          </div>
+
+          {/* Right: undo */}
           <button
             type="button"
             onClick={undo}
@@ -134,6 +183,7 @@ export function GameScreen({ playerNames, onNewGame, onCancel }: Props) {
           onCross={handleCross}
           isGameOver={state.isGameOver}
           placements={placements}
+          diceValues={diceValues}
         />
       </div>
 
@@ -158,6 +208,28 @@ export function GameScreen({ playerNames, onNewGame, onCancel }: Props) {
           players={state.players}
           onNewGame={onNewGame}
           onClose={() => setOverlayOpen(false)}
+        />
+      )}
+
+      {/* Floating dice result pill — fixed bottom-center, always visible while scrolling */}
+      {diceValues && !state.isGameOver && !diceModalOpen && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-indigo-700 dark:bg-indigo-800 rounded-full px-3 py-1.5 shadow-xl">
+          {diceValues.map((v, i) => (
+            <span
+              key={i}
+              className="w-8 h-8 rounded-lg bg-white text-slate-800 text-sm font-bold flex items-center justify-center"
+            >
+              {v}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Dice modal */}
+      {diceModalOpen && (
+        <DiceModal
+          onFinish={handleDiceFinish}
+          onClose={() => setDiceModalOpen(false)}
         />
       )}
 

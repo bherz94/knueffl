@@ -11,7 +11,7 @@ type View = 'setup' | 'game'
 
 const APP_KEY = 'knueffl-app'
 
-function loadAppState(): { view: View; players: string[] } | null {
+function loadAppState(): { view: View; players: string[]; virtualDice: boolean } | null {
   try {
     const raw = localStorage.getItem(APP_KEY)
     if (!raw) return null
@@ -25,16 +25,18 @@ function AppInner() {
   const savedApp = loadAppState()
   const [view, setView] = useState<View>(savedApp?.view ?? 'setup')
   const [players, setPlayers] = useState<string[]>(savedApp?.players ?? [])
+  const [virtualDice, setVirtualDice] = useState<boolean>(savedApp?.virtualDice ?? false)
 
   useEffect(() => {
     try {
-      localStorage.setItem(APP_KEY, JSON.stringify({ view, players }))
+      localStorage.setItem(APP_KEY, JSON.stringify({ view, players, virtualDice }))
     } catch {}
-  }, [view, players])
+  }, [view, players, virtualDice])
 
-  function handleStart(names: string[]) {
+  function handleStart(names: string[], vd: boolean) {
     clearGameState()
     setPlayers(names)
+    setVirtualDice(vd)
     setView('game')
   }
 
@@ -51,8 +53,21 @@ function AppInner() {
   return (
     <div className="min-h-dvh flex flex-col bg-slate-50 dark:bg-slate-900 transition-colors">
       <TopBar />
-      {view === 'setup' && <SetupScreen onStart={handleStart} initialNames={players.length ? players : undefined} />}
-      {view === 'game' && <GameScreen playerNames={players} onNewGame={handleNewGame} onCancel={handleCancel} />}
+      {view === 'setup' && (
+        <SetupScreen
+          onStart={handleStart}
+          initialNames={players.length ? players : undefined}
+          initialVirtualDice={virtualDice}
+        />
+      )}
+      {view === 'game' && (
+        <GameScreen
+          playerNames={players}
+          virtualDice={virtualDice}
+          onNewGame={handleNewGame}
+          onCancel={handleCancel}
+        />
+      )}
     </div>
   )
 }

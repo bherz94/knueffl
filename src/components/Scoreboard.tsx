@@ -4,6 +4,7 @@ import {
   calcUpperSubtotal, calcBonus, calcUpperTotal,
   calcLowerTotal, calcGrandTotal, isPlayerDone,
 } from '../utils/scoring'
+import { getDiceAutoScore } from '../utils/dice'
 import { useTranslation } from '../hooks/useLanguage'
 import { PlayerHeader } from './PlayerHeader'
 import { ScoreCell } from './ScoreCell'
@@ -18,6 +19,7 @@ interface Props {
   onCross: (playerIndex: number, category: ScorableCategory) => void
   isGameOver?: boolean
   placements?: Record<number, number>
+  diceValues?: number[] | null
 }
 
 function categoryLabel(t: ReturnType<typeof useTranslation>['t'], id: ScorableCategory): string {
@@ -42,10 +44,16 @@ function categoryHint(t: ReturnType<typeof useTranslation>['t'], meta: CategoryM
   return null
 }
 
-export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellClick, onCross, isGameOver, placements }: Props) {
+export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellClick, onCross, isGameOver, placements, diceValues }: Props) {
   const { t } = useTranslation()
   const colSpan = players.length + 1
   const activeIndex = isGameOver ? -1 : currentPlayerIndex
+
+  const winnerSet: Set<number> = new Set(
+    placements
+      ? Object.entries(placements).filter(([, p]) => p === 1).map(([i]) => Number(i))
+      : []
+  )
 
   function handleCellClick(playerIndex: number, meta: CategoryMeta) {
     if (playerIndex !== currentPlayerIndex) return
@@ -68,7 +76,6 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
         key={meta.id}
         className={zebra ? 'bg-slate-50/50 dark:bg-slate-800/20' : ''}
       >
-        {/* Label column */}
         <td className="sticky left-0 z-10 bg-inherit px-3 py-1 border-b border-slate-100 dark:border-slate-800">
           <div className="flex flex-col leading-tight">
             <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap">
@@ -82,7 +89,6 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
           </div>
         </td>
 
-        {/* Player cells */}
         {players.map((player, pi) => (
           <td key={pi} className={[
             'px-1 py-1 border-b border-slate-100 dark:border-slate-800',
@@ -92,6 +98,12 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
               cell={player.scores[meta.id]}
               isActive={pi === activeIndex}
               isSelected={activeCellKey === `${pi}-${meta.id}`}
+              isViable={
+                diceValues != null &&
+                pi === activeIndex &&
+                player.scores[meta.id].status === 'empty' &&
+                getDiceAutoScore(diceValues, meta.id) !== null
+              }
               onSingleClick={() => handleCellClick(pi, meta)}
               onDoubleClick={() => handleCellDoubleClick(pi, meta)}
             />
@@ -106,6 +118,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
     getValue: (p: Player) => number,
     highlight = false,
     showFor?: (p: Player) => boolean,
+    showWinner = false,
   ) {
     return (
       <tr className={highlight ? 'bg-indigo-50/40 dark:bg-indigo-900/10' : 'bg-slate-50 dark:bg-slate-800/30'}>
@@ -123,6 +136,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
               value={!showFor || showFor(player) ? getValue(player) : null}
               highlight={highlight}
               isActive={pi === activeIndex}
+              isWinner={showWinner && winnerSet.has(pi)}
             />
           </td>
         ))}
@@ -134,9 +148,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
     <div className="overflow-x-auto">
       <table className="w-full border-collapse min-w-0" style={{ tableLayout: 'fixed' }}>
         <colgroup>
-          {/* Label column */}
           <col style={{ width: '110px', minWidth: '100px' }} />
-          {/* Player columns — equal width */}
           {players.map((_, i) => (
             <col key={i} style={{ width: `${Math.floor(100 / players.length)}%` }} />
           ))}
@@ -165,19 +177,17 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
         </thead>
 
         <tbody>
-          {/* Upper section */}
           <SectionHeader label={t.upperSection} colSpan={colSpan} />
           {UPPER_CATEGORIES.map((meta, idx) => renderCategoryRow(meta, idx % 2 === 1))}
           {renderAutoRow(t.upperSubtotal, (p) => calcUpperSubtotal(p.scores))}
           {renderAutoRow(t.bonus, (p) => calcBonus(p.scores), true)}
           {renderAutoRow(t.upperTotal, (p) => calcUpperTotal(p.scores), true)}
 
-          {/* Lower section */}
           <SectionHeader label={t.lowerSection} colSpan={colSpan} />
           {LOWER_CATEGORIES.map((meta, idx) => renderCategoryRow(meta, idx % 2 === 1))}
           {renderAutoRow(t.lowerTotal, (p) => calcLowerTotal(p.scores))}
           {renderAutoRow(t.upperTotalRepeated, (p) => calcUpperTotal(p.scores))}
-          {renderAutoRow(t.grandTotal, (p) => calcGrandTotal(p.scores), true, (p) => isPlayerDone(p.scores))}
+          {renderAutoRow(t.grandTotal, (p) => calcGrandTotal(p.scores), true, (p) => isPlayerDone(p.scores), true)}
         </tbody>
       </table>
     </div>

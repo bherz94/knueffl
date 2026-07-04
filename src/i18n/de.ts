@@ -69,6 +69,14 @@ const de: Translations = {
   cancelConfirmYes: 'Ja, abbrechen',
   cancelConfirmNo: 'Weiterspielen',
 
+  // Virtual dice
+  virtualDice: 'Virtuelle Würfel',
+  rollDice: 'Würfeln',
+  rollAgain: 'Nochmal',
+  finishRolling: 'Fertig',
+  throwNumber: (n, max) => `Wurf ${n}/${max}`,
+  keepToggleHint: 'Würfel antippen zum Behalten',
+
   // Game end
   gameOver: 'Spiel beendet!',
   finalRankings: 'Endstand',

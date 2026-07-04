@@ -7,6 +7,7 @@ export interface GameState {
   players: Player[]
   currentPlayerIndex: number
   isGameOver: boolean
+  diceValues: number[] | null
 }
 
 const GAME_KEY = 'knueffl-game'
@@ -15,7 +16,8 @@ function loadGameState(): { state: GameState; history: GameState[] } | null {
   try {
     const raw = localStorage.getItem(GAME_KEY)
     if (!raw) return null
-    return JSON.parse(raw)
+    const parsed = JSON.parse(raw)
+    return parsed
   } catch {
     return null
   }
@@ -25,13 +27,16 @@ export function clearGameState() {
   try { localStorage.removeItem(GAME_KEY) } catch {}
 }
 
-export function useGameState(playerNames: string[]) {
-  const initial: GameState = {
+function makeInitial(playerNames: string[]): GameState {
+  return {
     players: playerNames.map((name) => ({ name, scores: makeEmptyScores() })),
     currentPlayerIndex: 0,
     isGameOver: false,
+    diceValues: null,
   }
+}
 
+export function useGameState(playerNames: string[]) {
   const [history, setHistory] = useState<GameState[]>(() => {
     const saved = loadGameState()
     if (!saved) return []
@@ -43,11 +48,14 @@ export function useGameState(playerNames: string[]) {
 
   const [state, setState] = useState<GameState>(() => {
     const saved = loadGameState()
+    const initial = makeInitial(playerNames)
     if (!saved) return initial
     const match =
       saved.state.players.length === playerNames.length &&
       saved.state.players.every((p, i) => p.name === playerNames[i])
-    return match ? saved.state : initial
+    if (!match) return initial
+    // Normalize saves that predate diceValues field
+    return { ...saved.state, diceValues: saved.state.diceValues ?? null }
   })
 
   useEffect(() => {
@@ -83,10 +91,10 @@ export function useGameState(playerNames: string[]) {
   function advance(prev: GameState, players: Player[]): GameState {
     const allDone = players.every((p) => isPlayerDone(p.scores))
     if (allDone) {
-      return { players, currentPlayerIndex: prev.currentPlayerIndex, isGameOver: true }
+      return { players, currentPlayerIndex: prev.currentPlayerIndex, isGameOver: true, diceValues: null }
     }
     const next = (prev.currentPlayerIndex + 1) % players.length
-    return { players, currentPlayerIndex: next, isGameOver: false }
+    return { players, currentPlayerIndex: next, isGameOver: false, diceValues: null }
   }
 
   function undo() {
@@ -98,14 +106,14 @@ export function useGameState(playerNames: string[]) {
     })
   }
 
-  function reset(names: string[]) {
-    setHistory([])
-    setState({
-      players: names.map((name) => ({ name, scores: makeEmptyScores() })),
-      currentPlayerIndex: 0,
-      isGameOver: false,
-    })
+  function setDice(values: number[] | null) {
+    setState((prev) => ({ ...prev, diceValues: values }))
   }
 
-  return { state, score, cross, undo, reset, canUndo: history.length > 0 }
+  function reset(names: string[]) {
+    setHistory([])
+    setState(makeInitial(names))
+  }
+
+  return { state, score, cross, undo, setDice, reset, canUndo: history.length > 0 }
 }

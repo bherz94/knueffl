@@ -5,13 +5,14 @@ interface Props {
   cell: CellState
   isActive: boolean
   isSelected: boolean
+  isViable?: boolean
   onSingleClick: () => void
   onDoubleClick: () => void
 }
 
 const HOLD_MS = 300
 
-export function ScoreCell({ cell, isActive, isSelected, onSingleClick, onDoubleClick }: Props) {
+export function ScoreCell({ cell, isActive, isSelected, isViable, onSingleClick, onDoubleClick }: Props) {
   const isEmpty = cell.status === 'empty'
   const isCrossed = cell.status === 'crossed'
   const isScored = cell.status === 'scored'
@@ -67,6 +68,7 @@ export function ScoreCell({ cell, isActive, isSelected, onSingleClick, onDoubleC
     if (!isActive) return 'bg-white dark:bg-slate-700 border border-dashed border-slate-200 dark:border-slate-600 cursor-default'
     if (isSelected) return 'bg-emerald-100 dark:bg-emerald-900/40 border-2 border-emerald-500 dark:border-emerald-400 cursor-pointer'
     if (pressing) return 'border-2 border-emerald-400 dark:border-emerald-500 cursor-pointer'
+    if (isViable) return 'bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-500 dark:border-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 cursor-pointer'
     return 'bg-white dark:bg-slate-700 border-2 border-indigo-400 dark:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer'
   }
 

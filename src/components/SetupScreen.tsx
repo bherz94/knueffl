@@ -2,17 +2,19 @@ import { useState } from 'react'
 import { useTranslation } from '../hooks/useLanguage'
 
 interface Props {
-  onStart: (players: string[]) => void
+  onStart: (players: string[], virtualDice: boolean) => void
   initialNames?: string[]
+  initialVirtualDice?: boolean
 }
 
 const MIN_PLAYERS = 2
 const MAX_PLAYERS = 6
 
-export function SetupScreen({ onStart, initialNames }: Props) {
+export function SetupScreen({ onStart, initialNames, initialVirtualDice }: Props) {
   const { t } = useTranslation()
   const [count, setCount] = useState(initialNames?.length ?? 2)
   const [names, setNames] = useState<string[]>(initialNames ?? ['', ''])
+  const [virtualDice, setVirtualDice] = useState(initialVirtualDice ?? false)
 
   function setPlayerCount(n: number) {
     const clamped = Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, n))
@@ -32,7 +34,7 @@ export function SetupScreen({ onStart, initialNames }: Props) {
 
   function handleStart() {
     if (!allFilled) return
-    onStart(names.map((n) => n.trim()))
+    onStart(names.map((n) => n.trim()), virtualDice)
   }
 
   return (
@@ -119,6 +121,19 @@ export function SetupScreen({ onStart, initialNames }: Props) {
               ))}
             </div>
           </div>
+
+          {/* Virtual dice toggle */}
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={virtualDice}
+              onChange={(e) => setVirtualDice(e.target.checked)}
+              className="w-4 h-4 rounded accent-indigo-600 cursor-pointer"
+            />
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              🎲 {t.virtualDice}
+            </span>
+          </label>
 
           {/* Start button */}
           <button
