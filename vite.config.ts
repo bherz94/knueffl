@@ -20,6 +20,7 @@ export default defineConfig(({ command }) => ({
         theme_color: '#6366f1',
         background_color: '#1e2130',
         display: 'standalone',
+        orientation: 'any',
         start_url: command === 'build' ? '/knueffl/' : '/',
         scope: command === 'build' ? '/knueffl/' : '/',
         icons: [
