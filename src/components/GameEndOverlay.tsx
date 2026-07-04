@@ -5,6 +5,7 @@ import { useTranslation } from '../hooks/useLanguage'
 interface Props {
   players: Player[]
   onNewGame: () => void
+  onClose: () => void
 }
 
 const PLAYER_COLORS = [
@@ -16,7 +17,7 @@ const PLAYER_COLORS = [
   'bg-purple-500',
 ]
 
-export function GameEndOverlay({ players, onNewGame }: Props) {
+export function GameEndOverlay({ players, onNewGame, onClose }: Props) {
   const { t } = useTranslation()
 
   const ranked = players
@@ -36,7 +37,15 @@ export function GameEndOverlay({ players, onNewGame }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-sm p-6">
         {/* Header */}
-        <div className="text-center mb-6">
+        <div className="relative text-center mb-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-0 top-0 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-sm"
+            aria-label="Close"
+          >
+            ✕
+          </button>
           <div className="text-4xl mb-2">🏆</div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{t.gameOver}</h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{t.finalRankings}</p>

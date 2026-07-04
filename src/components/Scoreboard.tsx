@@ -16,6 +16,8 @@ interface Props {
   activeCellKey: string | null
   onCellClick: (playerIndex: number, meta: CategoryMeta) => void
   onCross: (playerIndex: number, category: ScorableCategory) => void
+  isGameOver?: boolean
+  placements?: Record<number, number>
 }
 
 function categoryLabel(t: ReturnType<typeof useTranslation>['t'], id: ScorableCategory): string {
@@ -40,9 +42,10 @@ function categoryHint(t: ReturnType<typeof useTranslation>['t'], meta: CategoryM
   return null
 }
 
-export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellClick, onCross }: Props) {
+export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellClick, onCross, isGameOver, placements }: Props) {
   const { t } = useTranslation()
   const colSpan = players.length + 1
+  const activeIndex = isGameOver ? -1 : currentPlayerIndex
 
   function handleCellClick(playerIndex: number, meta: CategoryMeta) {
     if (playerIndex !== currentPlayerIndex) return
@@ -83,11 +86,11 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
         {players.map((player, pi) => (
           <td key={pi} className={[
             'px-1 py-1 border-b border-slate-100 dark:border-slate-800',
-            pi === currentPlayerIndex ? 'bg-indigo-50/60 dark:bg-indigo-900/10' : '',
+            pi === activeIndex ? 'bg-indigo-50/60 dark:bg-indigo-900/10' : '',
           ].join(' ')}>
             <ScoreCell
               cell={player.scores[meta.id]}
-              isActive={pi === currentPlayerIndex}
+              isActive={pi === activeIndex}
               isSelected={activeCellKey === `${pi}-${meta.id}`}
               onSingleClick={() => handleCellClick(pi, meta)}
               onDoubleClick={() => handleCellDoubleClick(pi, meta)}
@@ -114,12 +117,12 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
         {players.map((player, pi) => (
           <td key={pi} className={[
             'px-1 py-1 border-b border-slate-100 dark:border-slate-800',
-            pi === currentPlayerIndex ? 'bg-indigo-50/60 dark:bg-indigo-900/10' : '',
+            pi === activeIndex ? 'bg-indigo-50/60 dark:bg-indigo-900/10' : '',
           ].join(' ')}>
             <AutoCell
               value={!showFor || showFor(player) ? getValue(player) : null}
               highlight={highlight}
-              isActive={pi === currentPlayerIndex}
+              isActive={pi === activeIndex}
             />
           </td>
         ))}
@@ -147,13 +150,14 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
                 key={i}
                 className={[
                   'px-1 py-1 border-b-2 border-slate-200 dark:border-slate-700',
-                  i === currentPlayerIndex ? 'bg-indigo-50/60 dark:bg-indigo-900/10' : 'bg-white dark:bg-slate-900',
+                  i === activeIndex ? 'bg-indigo-50/60 dark:bg-indigo-900/10' : 'bg-white dark:bg-slate-900',
                 ].join(' ')}
               >
                 <PlayerHeader
                   name={player.name}
-                  isActive={i === currentPlayerIndex}
+                  isActive={i === activeIndex}
                   index={i}
+                  place={placements?.[i]}
                 />
               </th>
             ))}

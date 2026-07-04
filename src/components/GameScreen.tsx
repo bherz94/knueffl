@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { CategoryMeta, ScorableCategory } from '../types/game'
 import { useGameState } from '../hooks/useGameState'
 import { useTranslation } from '../hooks/useLanguage'
+import { calcGrandTotal } from '../utils/scoring'
 import { Scoreboard } from './Scoreboard'
 import { UpperInputPopup } from './UpperInputPopup'
 import { FreeInputPopup } from './FreeInputPopup'
@@ -27,11 +28,31 @@ function popupCellKey(popup: ActivePopup): string | null {
   return `${popup.playerIndex}-${popup.meta.id}`
 }
 
+function calcPlacements(players: { name: string; scores: Parameters<typeof calcGrandTotal>[0] }[]): Record<number, number> {
+  const ranked = players
+    .map((p, i) => ({ i, total: calcGrandTotal(p.scores) }))
+    .sort((a, b) => b.total - a.total)
+  let place = 1
+  const result: Record<number, number> = {}
+  ranked.forEach((entry, idx) => {
+    if (idx > 0 && entry.total < ranked[idx - 1].total) place = idx + 1
+    result[entry.i] = place
+  })
+  return result
+}
+
 export function GameScreen({ playerNames, onNewGame, onCancel }: Props) {
   const { t } = useTranslation()
   const { state, score, cross, undo, canUndo } = useGameState(playerNames)
   const [popup, setPopup] = useState<ActivePopup>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [overlayOpen, setOverlayOpen] = useState(state.isGameOver)
+
+  useEffect(() => {
+    if (state.isGameOver) setOverlayOpen(true)
+  }, [state.isGameOver])
+
+  const placements = state.isGameOver ? calcPlacements(state.players) : undefined
 
   function handleCellClick(playerIndex: number, meta: CategoryMeta) {
     if (meta.inputKind === 'upper') {
@@ -67,19 +88,31 @@ export function GameScreen({ playerNames, onNewGame, onCancel }: Props) {
 
   return (
     <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900">
-      {/* Turn indicator */}
-      {!state.isGameOver && (
+      {/* Turn indicator — shown during play and when reviewing scores after game ends */}
+      {(!state.isGameOver || !overlayOpen) && (
         <div className="bg-indigo-600 dark:bg-indigo-700 text-white flex items-center justify-between py-2 px-4 gap-3">
-          <button
-            type="button"
-            onClick={() => setShowCancelConfirm(true)}
-            className="flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors"
-          >
-            ✕ {t.cancelGame}
-          </button>
+          {state.isGameOver ? (
+            <button
+              type="button"
+              onClick={onNewGame}
+              className="flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors"
+            >
+              🎲 {t.newGame}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowCancelConfirm(true)}
+              className="flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors"
+            >
+              ✕ {t.cancelGame}
+            </button>
+          )}
           <span className="text-sm font-semibold flex-1 text-center">
-            🎲 {t.currentTurn(currentPlayer.name)}
-            <span className="ml-2 text-indigo-200 text-xs hidden sm:inline">{t.crossOutHint}</span>
+            {state.isGameOver
+              ? `🏆 ${t.gameOver}`
+              : <>🎲 {t.currentTurn(currentPlayer.name)}<span className="ml-2 text-indigo-200 text-xs hidden sm:inline">{t.crossOutHint}</span></>
+            }
           </span>
           <button
             type="button"
@@ -99,6 +132,8 @@ export function GameScreen({ playerNames, onNewGame, onCancel }: Props) {
           activeCellKey={popupCellKey(popup)}
           onCellClick={handleCellClick}
           onCross={handleCross}
+          isGameOver={state.isGameOver}
+          placements={placements}
         />
       </div>
 
@@ -117,9 +152,13 @@ export function GameScreen({ playerNames, onNewGame, onCancel }: Props) {
         />
       )}
 
-      {/* Game over */}
-      {state.isGameOver && (
-        <GameEndOverlay players={state.players} onNewGame={onNewGame} />
+      {/* Game over overlay */}
+      {state.isGameOver && overlayOpen && (
+        <GameEndOverlay
+          players={state.players}
+          onNewGame={onNewGame}
+          onClose={() => setOverlayOpen(false)}
+        />
       )}
 
       {/* Cancel confirmation modal */}
