@@ -63,6 +63,11 @@ const en: Translations = {
   // Turn indicator
   currentTurn: (name: string) => `${name}'s turn`,
   undo: 'Undo',
+  cancelGame: 'Cancel',
+  cancelConfirmTitle: 'Cancel game?',
+  cancelConfirmMessage: 'All progress will be lost.',
+  cancelConfirmYes: 'Yes, cancel',
+  cancelConfirmNo: 'Keep playing',
 
   // Game end
   gameOver: 'Game over!',

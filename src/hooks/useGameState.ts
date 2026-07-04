@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Player, ScorableCategory } from '../types/game'
 import { makeEmptyScores } from '../types/game'
 import { isPlayerDone } from '../utils/scoring'
@@ -9,6 +9,22 @@ export interface GameState {
   isGameOver: boolean
 }
 
+const GAME_KEY = 'knueffl-game'
+
+function loadGameState(): { state: GameState; history: GameState[] } | null {
+  try {
+    const raw = localStorage.getItem(GAME_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
+export function clearGameState() {
+  try { localStorage.removeItem(GAME_KEY) } catch {}
+}
+
 export function useGameState(playerNames: string[]) {
   const initial: GameState = {
     players: playerNames.map((name) => ({ name, scores: makeEmptyScores() })),
@@ -16,8 +32,29 @@ export function useGameState(playerNames: string[]) {
     isGameOver: false,
   }
 
-  const [history, setHistory] = useState<GameState[]>([])
-  const [state, setState] = useState<GameState>(initial)
+  const [history, setHistory] = useState<GameState[]>(() => {
+    const saved = loadGameState()
+    if (!saved) return []
+    const match =
+      saved.state.players.length === playerNames.length &&
+      saved.state.players.every((p, i) => p.name === playerNames[i])
+    return match ? saved.history : []
+  })
+
+  const [state, setState] = useState<GameState>(() => {
+    const saved = loadGameState()
+    if (!saved) return initial
+    const match =
+      saved.state.players.length === playerNames.length &&
+      saved.state.players.every((p, i) => p.name === playerNames[i])
+    return match ? saved.state : initial
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(GAME_KEY, JSON.stringify({ state, history }))
+    } catch {}
+  }, [state, history])
 
   function score(playerIndex: number, category: ScorableCategory, value: number) {
     setState((prev) => {

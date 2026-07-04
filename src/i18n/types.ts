@@ -61,6 +61,11 @@ export interface Translations {
   // Turn indicator
   currentTurn: (name: string) => string
   undo: string
+  cancelGame: string
+  cancelConfirmTitle: string
+  cancelConfirmMessage: string
+  cancelConfirmYes: string
+  cancelConfirmNo: string
 
   // Game end
   gameOver: string

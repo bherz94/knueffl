@@ -10,6 +10,7 @@ import { GameEndOverlay } from './GameEndOverlay'
 interface Props {
   playerNames: string[]
   onNewGame: () => void
+  onCancel: () => void
 }
 
 type ActivePopup =
@@ -26,10 +27,11 @@ function popupCellKey(popup: ActivePopup): string | null {
   return `${popup.playerIndex}-${popup.meta.id}`
 }
 
-export function GameScreen({ playerNames, onNewGame }: Props) {
+export function GameScreen({ playerNames, onNewGame, onCancel }: Props) {
   const { t } = useTranslation()
   const { state, score, cross, undo, canUndo } = useGameState(playerNames)
   const [popup, setPopup] = useState<ActivePopup>(null)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
 
   function handleCellClick(playerIndex: number, meta: CategoryMeta) {
     if (meta.inputKind === 'upper') {
@@ -68,6 +70,13 @@ export function GameScreen({ playerNames, onNewGame }: Props) {
       {/* Turn indicator */}
       {!state.isGameOver && (
         <div className="bg-indigo-600 dark:bg-indigo-700 text-white flex items-center justify-between py-2 px-4 gap-3">
+          <button
+            type="button"
+            onClick={() => setShowCancelConfirm(true)}
+            className="flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors"
+          >
+            ✕ {t.cancelGame}
+          </button>
           <span className="text-sm font-semibold flex-1 text-center">
             🎲 {t.currentTurn(currentPlayer.name)}
             <span className="ml-2 text-indigo-200 text-xs hidden sm:inline">{t.crossOutHint}</span>
@@ -111,6 +120,40 @@ export function GameScreen({ playerNames, onNewGame }: Props) {
       {/* Game over */}
       {state.isGameOver && (
         <GameEndOverlay players={state.players} onNewGame={onNewGame} />
+      )}
+
+      {/* Cancel confirmation modal */}
+      {showCancelConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
+          onClick={() => setShowCancelConfirm(false)}
+        >
+          <div
+            className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.cancelConfirmTitle}</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t.cancelConfirmMessage}</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowCancelConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+              >
+                {t.cancelConfirmNo}
+              </button>
+              <button
+                type="button"
+                onClick={onCancel}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors"
+              >
+                {t.cancelConfirmYes}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

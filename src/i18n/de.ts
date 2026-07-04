@@ -63,6 +63,11 @@ const de: Translations = {
   // Turn indicator
   currentTurn: (name) => `${name} ist dran`,
   undo: 'Rückgängig',
+  cancelGame: 'Abbrechen',
+  cancelConfirmTitle: 'Spiel abbrechen?',
+  cancelConfirmMessage: 'Der aktuelle Fortschritt geht verloren.',
+  cancelConfirmYes: 'Ja, abbrechen',
+  cancelConfirmNo: 'Weiterspielen',
 
   // Game end
   gameOver: 'Spiel beendet!',
