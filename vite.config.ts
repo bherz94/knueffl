@@ -10,6 +10,9 @@ export default defineConfig(({ command }) => ({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+      },
       manifest: {
         name: 'Kniffel',
         short_name: 'Kniffel',
@@ -17,7 +20,6 @@ export default defineConfig(({ command }) => ({
         theme_color: '#6366f1',
         background_color: '#1e2130',
         display: 'standalone',
-        orientation: 'landscape',
         start_url: command === 'build' ? '/knueffl/' : '/',
         scope: command === 'build' ? '/knueffl/' : '/',
         icons: [
@@ -25,12 +27,19 @@ export default defineConfig(({ command }) => ({
             src: 'icon-192.png',
             sizes: '192x192',
             type: 'image/png',
+            purpose: 'any',
           },
           {
             src: 'icon-512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable',
+            purpose: 'any',
+          },
+          {
+            src: 'icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
           },
         ],
       },
