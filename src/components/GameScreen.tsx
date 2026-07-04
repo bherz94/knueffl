@@ -21,6 +21,11 @@ const UPPER_ID_TO_INDEX: Record<string, number> = {
   ones: 0, twos: 1, threes: 2, fours: 3, fives: 4, sixes: 5,
 }
 
+function popupCellKey(popup: ActivePopup): string | null {
+  if (!popup) return null
+  return `${popup.playerIndex}-${popup.meta.id}`
+}
+
 export function GameScreen({ playerNames, onNewGame }: Props) {
   const { t } = useTranslation()
   const { state, score, cross, undo, canUndo } = useGameState(playerNames)
@@ -40,16 +45,20 @@ export function GameScreen({ playerNames, onNewGame }: Props) {
     cross(playerIndex, category)
   }
 
+  function closePopup() {
+    setPopup(null)
+  }
+
   function handleUpperConfirm(value: number) {
     if (!popup) return
     score(popup.playerIndex, popup.meta.id as ScorableCategory, value)
-    setPopup(null)
+    closePopup()
   }
 
   function handleFreeConfirm(value: number) {
     if (!popup) return
     score(popup.playerIndex, popup.meta.id as ScorableCategory, value)
-    setPopup(null)
+    closePopup()
   }
 
   const currentPlayer = state.players[state.currentPlayerIndex]
@@ -78,6 +87,7 @@ export function GameScreen({ playerNames, onNewGame }: Props) {
         <Scoreboard
           players={state.players}
           currentPlayerIndex={state.currentPlayerIndex}
+          activeCellKey={popupCellKey(popup)}
           onCellClick={handleCellClick}
           onCross={handleCross}
         />
@@ -88,13 +98,13 @@ export function GameScreen({ playerNames, onNewGame }: Props) {
         <UpperInputPopup
           dieIndex={UPPER_ID_TO_INDEX[popup.meta.id] ?? 0}
           onConfirm={handleUpperConfirm}
-          onCancel={() => setPopup(null)}
+          onCancel={closePopup}
         />
       )}
       {popup?.kind === 'free' && (
         <FreeInputPopup
           onConfirm={handleFreeConfirm}
-          onCancel={() => setPopup(null)}
+          onCancel={closePopup}
         />
       )}
 

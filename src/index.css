@@ -53,3 +53,8 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+@keyframes holdPress {
+  0%   { background-color: rgba(52, 211, 153, 0.25); }
+  100% { background-color: rgba(239, 68, 68, 0.35); }
+}

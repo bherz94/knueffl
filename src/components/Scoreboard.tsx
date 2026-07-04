@@ -13,6 +13,7 @@ import { SectionHeader } from './SectionHeader'
 interface Props {
   players: Player[]
   currentPlayerIndex: number
+  activeCellKey: string | null
   onCellClick: (playerIndex: number, meta: CategoryMeta) => void
   onCross: (playerIndex: number, category: ScorableCategory) => void
 }
@@ -39,8 +40,7 @@ function categoryHint(t: ReturnType<typeof useTranslation>['t'], meta: CategoryM
   return null
 }
 
-export function Scoreboard({ players, currentPlayerIndex, onCellClick, onCross }: Props) {
-
+export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellClick, onCross }: Props) {
   const { t } = useTranslation()
   const colSpan = players.length + 1
 
@@ -88,6 +88,7 @@ export function Scoreboard({ players, currentPlayerIndex, onCellClick, onCross }
             <ScoreCell
               cell={player.scores[meta.id]}
               isActive={pi === currentPlayerIndex}
+              isSelected={activeCellKey === `${pi}-${meta.id}`}
               onSingleClick={() => handleCellClick(pi, meta)}
               onDoubleClick={() => handleCellDoubleClick(pi, meta)}
             />

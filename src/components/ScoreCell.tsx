@@ -4,28 +4,29 @@ import type { CellState } from '../types/game'
 interface Props {
   cell: CellState
   isActive: boolean
+  isSelected: boolean
   onSingleClick: () => void
-  onDoubleClick: () => void // cross out (long press)
+  onDoubleClick: () => void
 }
 
 const HOLD_MS = 300
 
-export function ScoreCell({ cell, isActive, onSingleClick, onDoubleClick }: Props) {
+export function ScoreCell({ cell, isActive, isSelected, onSingleClick, onDoubleClick }: Props) {
   const isEmpty = cell.status === 'empty'
   const isCrossed = cell.status === 'crossed'
   const isScored = cell.status === 'scored'
 
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const didLongPress = useRef(false)
-  const [holding, setHolding] = useState(false)
+  const [pressing, setPressing] = useState(false)
 
   function startHold() {
     if (!isEmpty) return
     didLongPress.current = false
-    setHolding(true)
+    setPressing(true)
     holdTimer.current = setTimeout(() => {
       didLongPress.current = true
-      setHolding(false)
+      setPressing(false)
       onDoubleClick()
     }, HOLD_MS)
   }
@@ -35,7 +36,7 @@ export function ScoreCell({ cell, isActive, onSingleClick, onDoubleClick }: Prop
       clearTimeout(holdTimer.current)
       holdTimer.current = null
     }
-    setHolding(false)
+    setPressing(false)
     if (!didLongPress.current && isEmpty) {
       onSingleClick()
     }
@@ -47,11 +48,27 @@ export function ScoreCell({ cell, isActive, onSingleClick, onDoubleClick }: Prop
       clearTimeout(holdTimer.current)
       holdTimer.current = null
     }
-    setHolding(false)
+    setPressing(false)
     didLongPress.current = false
   }
 
-  const scored = isScored ? (cell as Extract<CellState, { status: 'scored' }>) : null
+  const scored = isScored ? (cell as Extract<CellState, { status: 'scored' }>).value : null
+
+  // pressing + !isSelected: animate green→red over HOLD_MS
+  // React batches setPressing(false) + parent's isSelected=true in the same flush on quick tap,
+  // so the cell goes directly from animation to green with no white flash in between.
+  const pressStyle = pressing && !isSelected
+    ? { animation: `holdPress ${HOLD_MS}ms linear forwards` }
+    : undefined
+
+  function getCellClass() {
+    if (isScored) return 'bg-slate-100 dark:bg-slate-600/60 border border-slate-300 dark:border-slate-500 text-slate-800 dark:text-slate-100 cursor-default'
+    if (isCrossed) return 'bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-600 cursor-default'
+    if (!isActive) return 'bg-white dark:bg-slate-700 border border-dashed border-slate-200 dark:border-slate-600 cursor-default'
+    if (isSelected) return 'bg-emerald-100 dark:bg-emerald-900/40 border-2 border-emerald-500 dark:border-emerald-400 cursor-pointer'
+    if (pressing) return 'border-2 border-emerald-400 dark:border-emerald-500 cursor-pointer'
+    return 'bg-white dark:bg-slate-700 border-2 border-indigo-400 dark:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer'
+  }
 
   return (
     <button
@@ -64,26 +81,10 @@ export function ScoreCell({ cell, isActive, onSingleClick, onDoubleClick }: Prop
       onTouchEnd={(e) => { e.preventDefault(); endHold() }}
       onTouchCancel={cancelHold}
       onContextMenu={(e) => e.preventDefault()}
-      className={[
-        'h-10 w-full flex items-center justify-center text-sm font-semibold rounded transition-all select-none',
-        isEmpty && isActive && !holding
-          ? 'bg-white dark:bg-slate-700 border-2 border-indigo-400 dark:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer'
-          : '',
-        isEmpty && isActive && holding
-          ? 'bg-rose-100 dark:bg-rose-900/40 border-2 border-rose-400 dark:border-rose-500 cursor-pointer scale-95'
-          : '',
-        isEmpty && !isActive
-          ? 'bg-white dark:bg-slate-700 border border-dashed border-slate-200 dark:border-slate-600 cursor-default'
-          : '',
-        isScored
-          ? 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 cursor-default'
-          : '',
-        isCrossed
-          ? 'bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-600 cursor-default'
-          : '',
-      ].join(' ')}
+      style={pressStyle}
+      className={`h-10 w-full flex items-center justify-center text-sm font-semibold rounded select-none ${getCellClass()}`}
     >
-      {isScored && <span>{scored!.value}</span>}
+      {isScored && <span>{scored}</span>}
       {isCrossed && <span className="text-slate-400 dark:text-slate-500 text-base leading-none">✕</span>}
     </button>
   )
