@@ -56,7 +56,7 @@ const en: Translations = {
   confirm: 'Confirm',
   cancel: 'Cancel',
   crossOut: 'Cross out',
-  crossOutHint: 'Double-tap to cross out',
+  crossOutHint: 'Hold to cross out',
   enterScore: 'Enter score (0–30)',
   allEyes: 'Count all pips',
 

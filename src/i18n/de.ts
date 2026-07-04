@@ -56,7 +56,7 @@ const de: Translations = {
   confirm: 'Bestätigen',
   cancel: 'Abbrechen',
   crossOut: 'Streichen',
-  crossOutHint: 'Doppeltippen zum Streichen',
+  crossOutHint: 'Gedrückt halten zum Streichen',
   enterScore: 'Punkte eingeben (0–30)',
   allEyes: 'Alle Augen zählen',
 

@@ -1,41 +1,54 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import type { CellState } from '../types/game'
 
 interface Props {
   cell: CellState
   isActive: boolean
   onSingleClick: () => void
-  onDoubleClick: () => void
+  onDoubleClick: () => void // cross out (long press)
 }
+
+const HOLD_MS = 300
 
 export function ScoreCell({ cell, isActive, onSingleClick, onDoubleClick }: Props) {
   const isEmpty = cell.status === 'empty'
   const isCrossed = cell.status === 'crossed'
   const isScored = cell.status === 'scored'
 
-  const lastTap = useRef<number>(0)
-  const singleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const didLongPress = useRef(false)
+  const [holding, setHolding] = useState(false)
 
-  function handleClick() {
+  function startHold() {
     if (!isEmpty) return
-    const now = Date.now()
-    const gap = now - lastTap.current
-    lastTap.current = now
-
-    if (gap < 300) {
-      // double tap/click
-      if (singleTimer.current) {
-        clearTimeout(singleTimer.current)
-        singleTimer.current = null
-      }
+    didLongPress.current = false
+    setHolding(true)
+    holdTimer.current = setTimeout(() => {
+      didLongPress.current = true
+      setHolding(false)
       onDoubleClick()
-    } else {
-      // wait briefly in case a second tap follows
-      singleTimer.current = setTimeout(() => {
-        singleTimer.current = null
-        onSingleClick()
-      }, 300)
+    }, HOLD_MS)
+  }
+
+  function endHold() {
+    if (holdTimer.current) {
+      clearTimeout(holdTimer.current)
+      holdTimer.current = null
     }
+    setHolding(false)
+    if (!didLongPress.current && isEmpty) {
+      onSingleClick()
+    }
+    didLongPress.current = false
+  }
+
+  function cancelHold() {
+    if (holdTimer.current) {
+      clearTimeout(holdTimer.current)
+      holdTimer.current = null
+    }
+    setHolding(false)
+    didLongPress.current = false
   }
 
   const scored = isScored ? (cell as Extract<CellState, { status: 'scored' }>) : null
@@ -43,12 +56,21 @@ export function ScoreCell({ cell, isActive, onSingleClick, onDoubleClick }: Prop
   return (
     <button
       type="button"
-      onClick={handleClick}
       disabled={!isEmpty}
+      onMouseDown={startHold}
+      onMouseUp={endHold}
+      onMouseLeave={cancelHold}
+      onTouchStart={(e) => { e.preventDefault(); startHold() }}
+      onTouchEnd={(e) => { e.preventDefault(); endHold() }}
+      onTouchCancel={cancelHold}
+      onContextMenu={(e) => e.preventDefault()}
       className={[
         'h-10 w-full flex items-center justify-center text-sm font-semibold rounded transition-all select-none',
-        isEmpty && isActive
+        isEmpty && isActive && !holding
           ? 'bg-white dark:bg-slate-700 border-2 border-indigo-400 dark:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer'
+          : '',
+        isEmpty && isActive && holding
+          ? 'bg-rose-100 dark:bg-rose-900/40 border-2 border-rose-400 dark:border-rose-500 cursor-pointer scale-95'
           : '',
         isEmpty && !isActive
           ? 'bg-white dark:bg-slate-700 border border-dashed border-slate-200 dark:border-slate-600 cursor-default'
