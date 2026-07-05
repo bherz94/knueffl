@@ -146,6 +146,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
 
   return (
     <div className="overflow-x-auto">
+      <div className="mx-auto" style={{ maxWidth: `${110 + players.length * 150}px`, minWidth: '70%' }}>
       <table className="w-full border-collapse min-w-0" style={{ tableLayout: 'fixed' }}>
         <colgroup>
           <col style={{ width: '110px', minWidth: '100px' }} />
@@ -190,6 +191,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
           {renderAutoRow(t.grandTotal, (p) => calcGrandTotal(p.scores), true, (p) => isPlayerDone(p.scores), true)}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }
