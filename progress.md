@@ -308,3 +308,35 @@ Task 4 (final) of the 4-task player-profiles feature. Leaderboard/history now id
 - `src/components/GameEndOverlay.tsx`: rankings rows use `<PlayerAvatar>` with `resolveAvatar(player.profileId, player.avatar)`; removed the now-unused local `PLAYER_COLORS`.
 - Backward compatible: legacy records with no `profileId` aggregate by name and render the initial fallback (no crashes/missing-avatar errors).
 - No new i18n strings (avatars are images). Build + lint pass. This completes the 4-task player-profiles feature.
+
+## TASK 40 — Drag-and-drop reordering of players on the setup screen ✅
+Players can now be reordered on `SetupScreen` before starting, so turn order can be arranged up front. Implemented with pointer events (works on touch and mouse — the app is a mobile-first PWA where HTML5 drag is unreliable), no new dependencies.
+- `src/components/SetupScreen.tsx`: each player row now has a grip handle (`⠿`) on the left. `onPointerDown` on the handle captures the pointer (`setPointerCapture`) and sets `dragIndex`; `onPointerMove` computes the hovered slot via `slotForY` (comparing `clientY` against each row's mid-point using a `rowRefs` array) and live-reorders the `PlayerSetup[]` via `reorder(from, to)` (splice out, splice in), updating `dragIndex` so the drag follows; `onPointerUp`/`onPointerCancel` release capture and clear `dragIndex`. The handle uses `touch-none select-none cursor-grab`; the dragged row gets an opacity/ring/shadow highlight. Slot number badges (`{i + 1}`) reflect the new order automatically, and per-slot profile assignment moves with the row.
+- i18n: added `reorderPlayer` (types + de + en) for the handle's `aria-label`.
+- Build + lint pass.
+
+## TASK 41 — Manage profiles (edit name/avatar) anytime, live-updating the game ✅
+Profiles (player "accounts") can now be edited — name and/or avatar — from a dedicated global entry point reachable in both the setup and game views, and saving an edit updates every place the profile is currently in use **without a reload**.
+- `src/utils/profiles.ts`:
+  - `upsertProfile`/`removeProfile` now `emitProfilesChanged()` after a successful write (remove only fires when something was actually removed).
+  - Added a lightweight change bus: `emitProfilesChanged()` dispatches a `knueffl-profiles-changed` window `Event`; `onProfilesChanged(handler)` subscribes and returns an unsubscribe.
+  - Added `syncSlotToProfile(slot)` / `syncSlotsToProfiles(slots)`: given a name/avatar-carrying slot (`PlayerSetup` **or** `Player` — generic over `{ name; profileId?; avatar? }`), re-sync to the linked profile's **current** name + avatar via `getProfile`. Slots with no `profileId`, or whose profile was deleted, are returned unchanged (deleting a profile does not evict a player from a live game). Both return the same reference when nothing changed, so subscribers can skip needless re-renders / persistence writes.
+- `src/components/ProfilePickerModal.tsx`: `onSelect` is now **optional**. With `onSelect` → the existing setup-slot **picker** (row tap assigns). Without it → **manager** mode (`managing = !onSelect`): the header reads `manageProfiles`, tapping a profile row opens its editor (the redundant per-row ✏️ is hidden in this mode), and the footer button reads `close`. The create/edit form (name + `processAvatarFile` upload, live preview, remove-photo) and the delete-confirm flow are shared unchanged; saving/deleting goes through `upsertProfile`/`removeProfile`, which now broadcast the change.
+- `src/components/TopBar.tsx`: added a 👤 button (before 🏆/⚙️) that opens `<ProfilePickerModal onClose=… />` with no `onSelect` → management mode. Present in both setup and game views since `TopBar` is always rendered.
+- **Live propagation subscribers** (all via `onProfilesChanged`, cleaned up on unmount):
+  - `src/App.tsx`: re-syncs the app-level `players` setup list (used for New Game rotation).
+  - `src/components/SetupScreen.tsx`: re-syncs its local `players` slots so the setup screen reflects edits immediately.
+  - `src/hooks/useGameState.ts`: re-syncs the live game's `state.players` (score sheet headers + turn indicator) **and** every undo `history` snapshot's players (so undo stays consistent with the edited identity). Uses top-level functional updaters that preserve references when unchanged (respecting the no-nested-setters rule). Patching `state` also flows into the `knueffl-game` persistence effect.
+- History views are intentionally **not** retroactively renamed (records are historical snapshots); avatars there already resolve to the profile's current image via `resolveAvatar` (Task 39).
+- i18n: added `manageProfiles`, `close` (types + de + en).
+- Build + lint pass.
+
+## TASK 42 — Custom "Take Photo" / "Choose Existing" avatar buttons ✅
+The profile create/edit form now offers two explicit, app-styled source buttons instead of the single "📷 Upload photo" control that deferred to the browser's native action sheet.
+- `src/components/ProfilePickerModal.tsx`: the avatar row's upload area now renders two `<label>`-wrapped hidden `<input type="file" accept="image/*">` buttons side by side (`flex flex-wrap gap-2`):
+  - **📷 Take Photo** — its input carries `capture="environment"`, so mobile opens the camera directly; desktop (no camera exposed to `capture`) falls back to a normal file dialog.
+  - **🖼️ Choose Existing** — no `capture`, so it opens the photo library / file picker.
+  - Both reuse the existing `handleFile` → `processAvatarFile` pipeline unchanged (center-crop → compressed data-URL → live preview → linked on save). The remove-photo affordance is untouched.
+- No `getUserMedia`/in-app live-camera UI — this stays a native-picker feature, so it works offline in the PWA with no camera-permission plumbing.
+- i18n: retired the now-unused `uploadPhoto`; added `takePhoto` / `choosePhoto` (types + de + en). DE: „Foto aufnehmen" / „Foto auswählen".
+- Build + lint pass.

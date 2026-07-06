@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PlayerSetup, Profile } from '../types/profile'
 import { useTranslation } from '../hooks/useLanguage'
+import { onProfilesChanged, syncSlotsToProfiles } from '../utils/profiles'
 import { ProfilePickerModal } from './ProfilePickerModal'
 
 interface Props {
@@ -23,6 +24,54 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
   const [virtualDice, setVirtualDice] = useState(initialVirtualDice ?? false)
   // Slot index whose profile picker is open, or null.
   const [pickerSlot, setPickerSlot] = useState<number | null>(null)
+  // Drag-and-drop reordering: index of the slot currently being dragged, or null.
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const rowRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  // Re-sync profile-linked slots when a profile is edited (e.g. from the TopBar
+  // manager) so the setup screen reflects the new name/avatar immediately.
+  useEffect(() => onProfilesChanged(() => setPlayers((prev) => syncSlotsToProfiles(prev))), [])
+
+  function reorder(from: number, to: number) {
+    setPlayers((prev) => {
+      const next = [...prev]
+      const [item] = next.splice(from, 1)
+      next.splice(to, 0, item)
+      return next
+    })
+  }
+
+  // Which slot the pointer is currently over, by comparing against row midpoints.
+  function slotForY(clientY: number): number {
+    for (let j = 0; j < players.length; j++) {
+      const el = rowRefs.current[j]
+      if (!el) continue
+      const r = el.getBoundingClientRect()
+      if (clientY < r.top + r.height / 2) return j
+    }
+    return players.length - 1
+  }
+
+  function handleDragStart(i: number, e: React.PointerEvent) {
+    e.preventDefault()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setDragIndex(i)
+  }
+
+  function handleDragMove(e: React.PointerEvent) {
+    if (dragIndex == null) return
+    const target = slotForY(e.clientY)
+    if (target !== dragIndex) {
+      reorder(dragIndex, target)
+      setDragIndex(target)
+    }
+  }
+
+  function handleDragEnd(e: React.PointerEvent) {
+    if (dragIndex == null) return
+    e.currentTarget.releasePointerCapture?.(e.pointerId)
+    setDragIndex(null)
+  }
 
   function setPlayerCount(n: number) {
     const clamped = Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, n))
@@ -125,7 +174,25 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
               {players.map((player, i) => {
                 const filled = player.name.trim().length > 0
                 return (
-                  <div key={i} className="flex items-center gap-2">
+                  <div
+                    key={i}
+                    ref={(el) => { rowRefs.current[i] = el }}
+                    className={[
+                      'flex items-center gap-2 rounded-lg transition-[opacity,box-shadow]',
+                      dragIndex === i ? 'opacity-70 shadow-lg ring-2 ring-indigo-400 dark:ring-indigo-500' : '',
+                    ].join(' ')}
+                  >
+                    <span
+                      onPointerDown={(e) => handleDragStart(i, e)}
+                      onPointerMove={handleDragMove}
+                      onPointerUp={handleDragEnd}
+                      onPointerCancel={handleDragEnd}
+                      role="button"
+                      aria-label={t.reorderPlayer}
+                      className="w-6 h-7 flex-shrink-0 flex items-center justify-center text-slate-300 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-300 cursor-grab active:cursor-grabbing touch-none select-none"
+                    >
+                      ⠿
+                    </span>
                     <span className="w-7 h-7 flex-shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center">
                       {i + 1}
                     </span>

@@ -4,6 +4,7 @@ import { useTheme } from '../hooks/useTheme'
 import { useFontScale } from '../hooks/useFontScale'
 import type { FontScale } from '../hooks/useFontScale'
 import { HistoryModal } from './HistoryModal'
+import { ProfilePickerModal } from './ProfilePickerModal'
 
 export function TopBar() {
   const { t, language, setLanguage } = useTranslation()
@@ -11,6 +12,7 @@ export function TopBar() {
   const { fontScale, setFontScale } = useFontScale()
   const [open, setOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [profilesOpen, setProfilesOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   // Close the popover on outside click / Escape
@@ -41,6 +43,17 @@ export function TopBar() {
       <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">🎲 {t.appTitle}</span>
 
       <div className="flex items-center gap-2">
+        {/* Manage profiles */}
+        <button
+          type="button"
+          onClick={() => setProfilesOpen(true)}
+          className="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition border border-slate-200 dark:border-slate-700"
+          title={t.manageProfiles}
+          aria-label={t.manageProfiles}
+        >
+          👤
+        </button>
+
         {/* History & high scores */}
         <button
           type="button"
@@ -139,6 +152,8 @@ export function TopBar() {
       </div>
 
       {historyOpen && <HistoryModal onClose={() => setHistoryOpen(false)} />}
+      {/* No onSelect → management mode (edit/create/delete). Edits propagate live. */}
+      {profilesOpen && <ProfilePickerModal onClose={() => setProfilesOpen(false)} />}
     </header>
   )
 }

@@ -3,6 +3,7 @@ import type { Player, ScorableCategory, MoveEntry, CellState } from '../types/ga
 import type { PlayerSetup } from '../types/profile'
 import { makeEmptyScores } from '../types/game'
 import { isPlayerDone } from '../utils/scoring'
+import { onProfilesChanged, syncSlotsToProfiles } from '../utils/profiles'
 
 export interface GameState {
   gameId: string
@@ -107,6 +108,31 @@ export function useGameState(players: PlayerSetup[]) {
       localStorage.setItem(GAME_KEY, JSON.stringify({ state, history }))
     } catch {}
   }, [state, history])
+
+  // Task 41: when a profile is edited (name/avatar), re-sync the live game's players
+  // so the score sheet + turn indicator update in place. Undo snapshots are patched
+  // too so undo stays consistent with the edited identity. syncSlotsToProfiles keeps
+  // the same references when nothing changed, so this is a no-op for unrelated edits.
+  useEffect(
+    () =>
+      onProfilesChanged(() => {
+        setState((s) => {
+          const players = syncSlotsToProfiles(s.players)
+          return players === s.players ? s : { ...s, players }
+        })
+        setHistory((h) => {
+          let changed = false
+          const next = h.map((snap) => {
+            const players = syncSlotsToProfiles(snap.players)
+            if (players === snap.players) return snap
+            changed = true
+            return { ...snap, players }
+          })
+          return changed ? next : h
+        })
+      }),
+    [],
+  )
 
   // NB: state setters are never nested inside another setter's updater. Under
   // StrictMode, React double-invokes updater functions to check purity, so a nested

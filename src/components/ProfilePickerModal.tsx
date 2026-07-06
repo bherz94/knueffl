@@ -10,7 +10,9 @@ import {
 import { useTranslation } from '../hooks/useLanguage'
 
 interface Props {
-  onSelect: (profile: Profile) => void
+  // When provided, the modal is a setup-slot PICKER: tapping a profile assigns it.
+  // When omitted, it's the profile MANAGER (Task 41): tapping a profile edits it.
+  onSelect?: (profile: Profile) => void
   onClose: () => void
 }
 
@@ -35,6 +37,8 @@ type Draft = { id: string | null; name: string; avatar?: string }
 
 export function ProfilePickerModal({ onSelect, onClose }: Props) {
   const { t } = useTranslation()
+  // No onSelect → this is the manager (edit/create/delete), not a slot picker.
+  const managing = !onSelect
   const [profiles, setProfiles] = useState<Profile[]>(() => loadProfiles())
   // null = list view; otherwise the form is shown for this draft.
   const [draft, setDraft] = useState<Draft | null>(null)
@@ -105,10 +109,18 @@ export function ProfilePickerModal({ onSelect, onClose }: Props) {
               <div className="flex items-center gap-4">
                 <Avatar profile={{ name: draft.name, avatar: draft.avatar }} size="lg" />
                 <div className="flex flex-col gap-2">
-                  <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-sm font-semibold cursor-pointer hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
-                    📷 {t.uploadPhoto}
-                    <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
-                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {/* Camera: `capture` opens it directly on mobile; degrades to a file dialog on desktop. */}
+                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-sm font-semibold cursor-pointer hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
+                      📷 {t.takePhoto}
+                      <input type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
+                    </label>
+                    {/* No `capture` → photo library / file picker. */}
+                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-sm font-semibold cursor-pointer hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
+                      🖼️ {t.choosePhoto}
+                      <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
+                    </label>
+                  </div>
                   {draft.avatar && (
                     <button
                       type="button"
@@ -160,7 +172,9 @@ export function ProfilePickerModal({ onSelect, onClose }: Props) {
           /* ---- Profile list ---- */
           <>
             <div className="p-5 pb-3 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">{t.chooseProfile}</h2>
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                {managing ? t.manageProfiles : t.chooseProfile}
+              </h2>
             </div>
 
             <div className="overflow-y-auto p-3 flex flex-col gap-2">
@@ -174,7 +188,8 @@ export function ProfilePickerModal({ onSelect, onClose }: Props) {
                   >
                     <button
                       type="button"
-                      onClick={() => onSelect(p)}
+                      onClick={() => (onSelect ? onSelect(p) : startEdit(p))}
+                      aria-label={managing ? t.editProfile : undefined}
                       className="flex items-center gap-3 flex-1 min-w-0 text-left"
                     >
                       <Avatar profile={p} />
@@ -182,14 +197,17 @@ export function ProfilePickerModal({ onSelect, onClose }: Props) {
                         {p.name}
                       </span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => startEdit(p)}
-                      aria-label={t.editProfile}
-                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                    >
-                      ✏️
-                    </button>
+                    {/* Explicit edit affordance only in picker mode; in manage mode the row tap edits. */}
+                    {!managing && (
+                      <button
+                        type="button"
+                        onClick={() => startEdit(p)}
+                        aria-label={t.editProfile}
+                        className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                      >
+                        ✏️
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => setConfirmDelete(p)}
@@ -216,7 +234,7 @@ export function ProfilePickerModal({ onSelect, onClose }: Props) {
                 onClick={onClose}
                 className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
               >
-                {t.cancel}
+                {managing ? t.close : t.cancel}
               </button>
             </div>
           </>

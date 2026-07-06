@@ -7,6 +7,7 @@ import { SetupScreen } from './components/SetupScreen'
 import { GameScreen } from './components/GameScreen'
 import { TopBar } from './components/TopBar'
 import { clearGameState } from './hooks/useGameState'
+import { onProfilesChanged, syncSlotsToProfiles } from './utils/profiles'
 import type { PlayerSetup } from './types/profile'
 
 type View = 'setup' | 'game'
@@ -57,6 +58,10 @@ function AppInner() {
       localStorage.setItem(APP_KEY, JSON.stringify({ view, players, virtualDice }))
     } catch {}
   }, [view, players, virtualDice])
+
+  // Keep the setup list (used for New Game rotation) in sync when a profile is
+  // edited anywhere — syncSlotsToProfiles returns the same array if nothing changed.
+  useEffect(() => onProfilesChanged(() => setPlayers((prev) => syncSlotsToProfiles(prev))), [])
 
   function handleStart(setups: PlayerSetup[], vd: boolean) {
     clearGameState()

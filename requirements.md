@@ -379,3 +379,70 @@ Give players a persistent record of past games and a cross-game leaderboard, all
 - Net effect: making a correction leaves `canUndo` / the undo stack untouched; undo continues to step back through real moves only.
 - **Corrections must survive undo of later moves.** Because each undo snapshot captures state *before* a real move, a snapshot taken after the corrected move still holds the move's pre-correction cell value. Undoing a later move would otherwise resurrect the old value (e.g. correct P1's `3×6`→`3×5`, then undo P1's later Full House → the Full House is correctly removed but the sixes cell springs back to `18`). Fix: when a correction commits, patch every undo snapshot that already recorded the corrected move (matched by move id) — clear the move's original cell, write the new cell, and swap the log entry in place — so the correction reads as if it had always been there. Snapshots predating the move are untouched.
 - **No nested state setters (StrictMode double-push).** `score`/`cross` pushed the undo snapshot via `setHistory(h => [...h, prev])` *inside* the `setState` updater; `undo` called `setState` inside the `setHistory` updater. React StrictMode (dev) double-invokes updater functions to check purity, and a nested non-idempotent append runs twice — so **every move pushed its snapshot to the undo stack twice**. A single undo still looked correct (it pops a real snapshot), but pressing undo repeatedly revealed the doubles as an every-other "does nothing / then works" pattern. Fix: never call a state setter inside another setter's updater. These mutators run from user events, so the closure `state`/`history`/`pendingCorrection` are the committed values — read them directly and pass to pure updaters or value setters.
+
+## Player profiles (TASK 36–39)
+
+Reusable player profiles so a game is set up by picking known people (with optional avatar photos) instead of retyping names, and so history is tied to a stable identity rather than name-equality. Split into four tasks, each implemented in a fresh context and logged to `progress.md`.
+
+## TASK 36 — Player profiles foundation (types + storage)
+
+- Introduce a `Profile` model — `{ id, name, avatar?, createdAt }`, where `avatar` is a compressed data-URL string (or undefined) — in `src/types/profile.ts`.
+- Add a `localStorage`-backed CRUD module `src/utils/profiles.ts` under key `knueffl-profiles`: `loadProfiles`, `saveProfiles`, `getProfile`, `upsertProfile`, `removeProfile`, `makeProfileId` (UUID with the same fallback as `makeMoveId`). Follow the defensive `try/catch` + `JSON.parse`/`Array.isArray` pattern used by `gameHistory.ts`.
+- Provide an avatar helper `processAvatarFile(file): Promise<string>` that rejects non-images, loads the image, center-crops to a square onto a ~128×128 canvas, and exports a compressed data URL (`image/jpeg`, ~0.8) so `localStorage` stays small.
+- Additively add optional `profileId?` / `avatar?` to `Player` (`src/types/game.ts`) and to `GameResult` (`src/utils/gameHistory.ts`). Foundation only — no UI wiring, no aggregation changes in this task.
+
+## TASK 37 — Wire profiles into game creation (setup + picker)
+
+- On the setup screen, tapping a player slot opens a profile picker that lists saved profiles (avatar thumbnail + name) as selectable rows, and can create / edit / delete profiles. Creating or editing supports an optional local photo upload (`<input type="file" accept="image/*">` → `processAvatarFile`) with a live preview and a remove-photo action. Selecting a profile assigns it (name + profileId + avatar) to that slot.
+- Setup slots show the chosen profile's avatar + name, or an empty "choose profile" placeholder; a filled slot can be cleared. Player-count controls and the virtual-dice toggle are unchanged; Start remains gated on every slot having a non-empty name.
+- Introduce `PlayerSetup = { name; profileId?; avatar? }` and change `onStart` to pass `PlayerSetup[]`. Thread this through `App` (state becomes `PlayerSetup[]`, migrating any legacy persisted `string[]` defensively; New-Game right-rotation operates on the setups), `GameScreen`, and `useGameState` (`makeInitial` maps each setup onto a `Player` carrying name + profileId + avatar; the rehydration "matching players" check compares both name and profileId).
+- All new user-facing strings go through the `Translations` interface and both locales.
+
+## TASK 38 — Render player avatars on the score sheet
+
+- Each player's avatar image appears on the score sheet in place of the colored initial disc; when no avatar is set, keep the existing per-player colored disc as the fallback. The place-medal badge overlay, active styling, and name label are preserved.
+- Thread `avatar` from `Player` through `Scoreboard` into `PlayerHeader`. Optionally show the current player's small avatar in the turn indicator. A shared avatar-with-initial-fallback component may be extracted to avoid duplication. No new strings (avatars are images).
+
+## TASK 39 — Profile-based history identity + avatars in history views
+
+- History identity is keyed by `profileId` when present, falling back to lowercased/trimmed name for legacy / profile-less records — so entries link to a profile rather than relying on name-equality. `aggregateStats` gains `profileId?` on `PlayerStats`; all existing metrics (`gamesPlayed`, `wins`, `bestGame`, `bestGameId`, `avgScore`) and `rankBy` are unchanged. Old name-keyed and new profile-keyed records for the same person are intentionally not merged.
+- Avatars are shown wherever a name appears in history: Recent Games rows, Leaderboard rows, the read-only board view, the move-history header, and the game-end rankings. Avatar resolution prefers the linked profile's **current** avatar (via `getProfile`), falling back to any avatar cached on the record, else the colored-initial fallback.
+- Backward compatible: legacy records without `profileId` aggregate by name and render the initial fallback with no crashes or missing-avatar errors.
+
+## TASK 40 — Drag-and-drop reordering of players on the setup screen
+
+- Players can be reordered on the setup screen before starting, so turn order can be arranged up front. Reordering mutates the `PlayerSetup[]` order; the slot number badges and per-slot profile assignments follow the new order.
+- Use native pointer events (works on touch and mouse — the app is a mobile-first PWA where HTML5 drag is unreliable on touch), no new dependencies. A per-row grip handle initiates the drag; the row being dragged is visually highlighted, and the handle disables touch scrolling while dragging. Player-count controls and Start-gating are unaffected. The handle carries an accessible label (`reorderPlayer`, added to both locales).
+
+## TASK 41 — Manage profiles (edit name/avatar) anytime, live-updating the game
+
+Give players a dedicated way to edit their saved accounts (profiles) — changing the **name and/or avatar** — that is reachable at any time, including **during a running game**, and that immediately updates everywhere the profile is currently in use.
+
+**Entry point (global):**
+- Add a 👤 button to the `TopBar` (next to 🏆 and ⚙️), present in both the setup and game views, that opens a profile **management** modal.
+- The management modal lists all saved profiles and lets the user create, edit (name + photo), and delete them. Editing/creating reuses the existing avatar upload flow (`processAvatarFile`, live preview, remove-photo). No "select/assign to a slot" behavior in this mode — tapping a profile opens its editor.
+
+**Reuse, not duplication:**
+- Extend `ProfilePickerModal` to serve both roles: when an `onSelect` handler is passed it stays the setup-slot **picker** (tap a row = assign); when `onSelect` is omitted it is the **manager** (tap a row = edit). The create/edit form and delete-confirm flow are shared. Header and footer labels adapt (`manageProfiles` / `close`).
+
+**Live propagation (the key requirement):**
+- Saving an edit must update, in place and without a reload, every slot that references that profile by `profileId`:
+  - the in-progress game's players (score sheet column headers + turn indicator),
+  - the setup screen's player slots (if visible),
+  - the app-level setup list used for New Game rotation.
+- A slot's stored `name`/`avatar` is treated as a cache of its linked profile; whenever the profile store changes, any slot carrying that `profileId` re-syncs to the profile's **current** name + avatar. Slots without a `profileId`, or whose profile was deleted, keep their last-known values unchanged (deleting a profile does not remove a player from a live game).
+- Mechanism: `upsertProfile`/`removeProfile` broadcast a lightweight change event; `App`, `SetupScreen`, and `useGameState` subscribe and re-sync their profile-linked slots (including the game's undo-history snapshots, so undo stays consistent with the edited identity). Reference identity is preserved when nothing changed to avoid needless re-renders/persist writes.
+- History records remain historical snapshots (past games are not retroactively renamed); avatars in history already resolve to the profile's current image via `resolveAvatar`.
+
+**i18n:** all new strings (`manageProfiles`, `close`) go through `types.ts` + `de.ts` + `en.ts`.
+
+## TASK 42 — Custom "Take Photo" / "Choose Existing" avatar buttons
+
+Replace the single "📷 Upload photo" control in the profile create/edit form with **two distinct, app-styled buttons** so the user explicitly chooses the source of the avatar image instead of relying on the browser's native action sheet:
+
+- **📷 Take Photo** — opens the device camera directly on mobile (`<input type="file" accept="image/*" capture="environment">`). On desktop (no camera exposed to `capture`) it degrades gracefully to a normal file dialog.
+- **🖼️ Choose Existing** — opens the photo library / file picker (`<input type="file" accept="image/*">`, no `capture`).
+
+Both feed the **existing** `handleFile` → `processAvatarFile` pipeline (center-crop → compressed data-URL → live preview → linked on save); no change to storage, cropping, or the remove-photo affordance. No `getUserMedia`/in-app live-camera UI — this stays a native-picker feature so it works offline in the PWA with no camera-permission plumbing.
+
+**i18n:** retire the now-unused `uploadPhoto` string; add `takePhoto` and `choosePhoto` across `types.ts` + `de.ts` + `en.ts`.

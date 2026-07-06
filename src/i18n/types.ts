@@ -22,6 +22,7 @@ export interface Translations {
   startGame: string
   addPlayer: string
   removePlayer: string
+  reorderPlayer: string
 
   // Upper section
   upperSection: string
@@ -127,9 +128,13 @@ export interface Translations {
   deleteProfileConfirm: (name: string) => string
   profileName: string
   profileNamePlaceholder: string
-  uploadPhoto: string
+  takePhoto: string
+  choosePhoto: string
   removePhoto: string
   noProfilesYet: string
   save: string
   delete: string
+  // Manage profiles (Task 41)
+  manageProfiles: string
+  close: string
 }

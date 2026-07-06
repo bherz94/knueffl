@@ -24,6 +24,7 @@ const de: Translations = {
   startGame: 'Spiel starten',
   addPlayer: 'Spieler hinzufügen',
   removePlayer: 'Spieler entfernen',
+  reorderPlayer: 'Spieler verschieben',
 
   // Upper section
   upperSection: 'Oberer Teil',
@@ -129,11 +130,15 @@ const de: Translations = {
   deleteProfileConfirm: (name) => `Profil „${name}" wirklich löschen?`,
   profileName: 'Name',
   profileNamePlaceholder: 'Name eingeben',
-  uploadPhoto: 'Foto hochladen',
+  takePhoto: 'Foto aufnehmen',
+  choosePhoto: 'Foto auswählen',
   removePhoto: 'Foto entfernen',
   noProfilesYet: 'Noch keine Profile. Erstelle ein neues.',
   save: 'Speichern',
   delete: 'Löschen',
+  // Manage profiles (Task 41)
+  manageProfiles: 'Profile verwalten',
+  close: 'Schließen',
 }
 
 export default de

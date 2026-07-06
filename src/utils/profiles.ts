@@ -36,12 +36,62 @@ export function upsertProfile(p: Profile): void {
   } else {
     saveProfiles([...list, p])
   }
+  emitProfilesChanged()
 }
 
 export function removeProfile(id: string): void {
   const list = loadProfiles()
   const next = list.filter((p) => p.id !== id)
-  if (next.length !== list.length) saveProfiles(next)
+  if (next.length !== list.length) {
+    saveProfiles(next)
+    emitProfilesChanged()
+  }
+}
+
+// --- Live profile-change propagation (Task 41) ---
+// Editing a profile must update everywhere it's currently in use — the in-progress
+// game's players, the setup slots, the app's setup list — without a reload. A slot's
+// stored name/avatar is a cache of its linked profile; on any profile change, holders
+// re-sync their profile-linked slots to the profile's CURRENT name + avatar.
+const PROFILES_CHANGED_EVENT = 'knueffl-profiles-changed'
+
+// Broadcast that the profile store changed (called by upsert/remove above).
+export function emitProfilesChanged(): void {
+  try {
+    window.dispatchEvent(new Event(PROFILES_CHANGED_EVENT))
+  } catch {}
+}
+
+// Subscribe to profile-store changes; returns an unsubscribe function.
+export function onProfilesChanged(handler: () => void): () => void {
+  window.addEventListener(PROFILES_CHANGED_EVENT, handler)
+  return () => window.removeEventListener(PROFILES_CHANGED_EVENT, handler)
+}
+
+// A name/avatar-carrying slot (PlayerSetup or Player) that may be linked to a profile.
+type ProfileLinkedSlot = { name: string; profileId?: string; avatar?: string }
+
+// Re-sync one slot to its linked profile's current name + avatar. Slots without a
+// profileId — or whose profile was deleted — are returned unchanged (keeping their
+// last-known values). Returns the same reference when nothing changed.
+export function syncSlotToProfile<T extends ProfileLinkedSlot>(slot: T): T {
+  if (!slot.profileId) return slot
+  const p = getProfile(slot.profileId)
+  if (!p) return slot
+  if (slot.name === p.name && slot.avatar === p.avatar) return slot
+  return { ...slot, name: p.name, avatar: p.avatar }
+}
+
+// Re-sync a list of slots; returns the same array reference when nothing changed so
+// callers can skip needless re-renders / persistence writes.
+export function syncSlotsToProfiles<T extends ProfileLinkedSlot>(slots: T[]): T[] {
+  let changed = false
+  const next = slots.map((s) => {
+    const synced = syncSlotToProfile(s)
+    if (synced !== s) changed = true
+    return synced
+  })
+  return changed ? next : slots
 }
 
 export function makeProfileId(): string {
