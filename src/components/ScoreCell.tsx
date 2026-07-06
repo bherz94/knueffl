@@ -12,6 +12,9 @@ interface Props {
 }
 
 const HOLD_MS = 300
+// If the finger travels more than this (px) between touchstart and touchend,
+// treat the gesture as a scroll rather than a tap.
+const MOVE_THRESHOLD = 10
 
 export function ScoreCell({ cell, isActive, isSelected, isViable, isCorrectable, onSingleClick, onDoubleClick }: Props) {
   const isEmpty = cell.status === 'empty'
@@ -21,6 +24,8 @@ export function ScoreCell({ cell, isActive, isSelected, isViable, isCorrectable,
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const didLongPress = useRef(false)
   const [pressing, setPressing] = useState(false)
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
+  const didMove = useRef(false)
 
   function startHold() {
     if (!isEmpty) return
@@ -82,8 +87,33 @@ export function ScoreCell({ cell, isActive, isSelected, isViable, isCorrectable,
       onMouseDown={startHold}
       onMouseUp={endHold}
       onMouseLeave={cancelHold}
-      onTouchStart={(e) => { e.preventDefault(); startHold() }}
-      onTouchEnd={(e) => { e.preventDefault(); endHold() }}
+      onTouchStart={(e) => {
+        const t = e.touches[0]
+        touchStart.current = { x: t.clientX, y: t.clientY }
+        didMove.current = false
+        startHold()
+      }}
+      onTouchMove={(e) => {
+        if (!touchStart.current || didMove.current) return
+        const t = e.touches[0]
+        const dx = Math.abs(t.clientX - touchStart.current.x)
+        const dy = Math.abs(t.clientY - touchStart.current.y)
+        if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
+          // Finger is scrolling — abandon the pending tap/long-press.
+          didMove.current = true
+          cancelHold()
+        }
+      }}
+      onTouchEnd={(e) => {
+        e.preventDefault()
+        touchStart.current = null
+        if (didMove.current) {
+          didMove.current = false
+          cancelHold()
+          return
+        }
+        endHold()
+      }}
       onTouchCancel={cancelHold}
       onContextMenu={(e) => e.preventDefault()}
       style={pressStyle}
