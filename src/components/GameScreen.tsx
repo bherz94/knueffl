@@ -5,6 +5,7 @@ import type { MoveSlot } from '../hooks/useGameState'
 import { useTranslation } from '../hooks/useLanguage'
 import { calcGrandTotal } from '../utils/scoring'
 import { getDiceAutoScore } from '../utils/dice'
+import { recordGame, removeRecord } from '../utils/gameHistory'
 import { Scoreboard } from './Scoreboard'
 import { UpperInputPopup } from './UpperInputPopup'
 import { FreeInputPopup } from './FreeInputPopup'
@@ -78,7 +79,22 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
   const diceValues = state.diceValues
 
   useEffect(() => {
-    if (state.isGameOver) setOverlayOpen(true)
+    if (state.isGameOver) {
+      setOverlayOpen(true)
+      const placement = calcPlacements(state.players)
+      recordGame({
+        id: state.gameId,
+        finishedAt: Date.now(),
+        virtualDice,
+        results: state.players
+          .map((p, i) => ({ name: p.name, total: calcGrandTotal(p.scores), place: placement[i], scores: p.scores }))
+          .sort((a, b) => a.place - b.place),
+      })
+    } else {
+      // Game un-finished via undo — drop the record we may have written.
+      removeRecord(state.gameId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver])
 
   // Auto-open dice modal on mount when no dice have been rolled yet

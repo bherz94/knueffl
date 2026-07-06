@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from '../hooks/useLanguage'
 
 interface Props {
@@ -17,6 +17,24 @@ export function UpperInputPopup({ dieIndex, onConfirm, onCancel }: Props) {
     if (selected === null || selected < 1) return
     onConfirm(selected * dieValue)
   }
+
+  // Desktop keyboard entry: digits 1–5 pick the die count, Enter confirms, Escape cancels.
+  // e.g. on "Dreier" pressing 3 then Enter commits 3 × 3 = 9.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key >= '1' && e.key <= '5') {
+        setSelected(Number(e.key))
+        e.preventDefault()
+      } else if (e.key === 'Enter') {
+        if (selected !== null && selected >= 1) onConfirm(selected * dieValue)
+        e.preventDefault()
+      } else if (e.key === 'Escape') {
+        onCancel()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selected, dieValue, onConfirm, onCancel])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onCancel}>

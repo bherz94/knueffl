@@ -96,6 +96,24 @@ const en: Translations = {
   },
   points: (n: number) => `${n} points`,
 
+  // Game history & high scores
+  history: 'History',
+  historyTitle: 'History & Leaderboard',
+  recentGames: 'Recent Games',
+  leaderboard: 'Leaderboard',
+  noGamesYet: 'No games played yet.',
+  statBestGame: 'Best game',
+  statWins: 'Wins',
+  statAvg: 'Average',
+  gamesPlayedCount: (n: number) => (n === 1 ? '1 game' : `${n} games`),
+  winsCount: (n: number) => (n === 1 ? '1 win' : `${n} wins`),
+  clearHistory: 'Clear history',
+  clearHistoryTitle: 'Clear history?',
+  clearHistoryConfirm: 'All saved games and leaderboards will be permanently removed.',
+  gameBoardTitle: 'Scorecard',
+  viewGameBoard: 'View scorecard',
+  showMore: (n: number) => `Show more (${n})`,
+
   // Move history & correction (Task 18)
   moveHistory: 'Move history',
   moveHistoryFor: (name: string) => `${name} — move history`,

@@ -163,3 +163,92 @@
 
 ## All tasks (1–22) complete ✅
 Every task in `requirements.md` is now implemented and the production build passes cleanly.
+
+---
+
+## TASK 23 — Game history + high-score leaderboard ✅
+Persistent record of finished games plus a cross-game leaderboard, all client-side in `localStorage` (new `knueffl-history` key — data is tiny and derived stats need no separate storage).
+- `src/hooks/useGameState.ts`: added a stable `gameId` to `GameState` (generated in `makeInitial`, carried through `advance`, backfilled in the rehydration normalizer). Used to dedupe records across reloads/corrections.
+- `src/utils/gameHistory.ts` (new): `GameRecord` model + `loadHistory`/`recordGame` (upsert by id, preserves `finishedAt`)/`removeRecord`/`clearHistory`; `aggregateStats` folds players case-insensitively (display name = most recent casing) into games played / wins / best game / average; `rankBy(metric)` for the leaderboard tabs.
+- `src/components/GameScreen.tsx`: on `isGameOver → true` records the finished game (ranked results via `calcPlacements` + `calcGrandTotal`); on `→ false` (undo) removes it.
+- `src/components/HistoryModal.tsx` (new): 🏆 overlay with two tabs — Recent Games (timestamped, ranked cards) and Leaderboard (Best game / Wins / Average sub-tabs, games-played as context). Includes a confirm-guarded Clear history action.
+- `src/components/TopBar.tsx`: added a 🏆 button (next to ⚙️) opening the modal — reachable from both setup and game views.
+- i18n strings added to `types.ts`, `de.ts`, `en.ts`. Build + lint pass.
+
+---
+
+## TASK 24 — Keyboard entry in the upper-section popup (desktop) ✅
+Desktop users can now score upper-section cells without the mouse.
+- `src/components/UpperInputPopup.tsx`: added a `keydown` listener — digits `1`–`5` set the selected count, `Enter` confirms (no-op when nothing selected, mirroring the disabled Confirm button), `Escape` cancels. The effect depends on `selected` so Enter reads the freshly-picked count.
+- Example: click **Dreier** → press `3` → `Enter` commits 3 × 3 = 9. Mouse/touch flow unchanged.
+- Build passes cleanly.
+
+---
+
+## TASK 25 — Cap the History/Leaderboard modal height ✅
+- `src/components/HistoryModal.tsx`: lowered the container cap from `max-h-[85vh]` to `max-h-[80vh]`. The scrolling body (`overflow-y-auto`, a flex child that can shrink below content) keeps the header tabs and footer fixed while the list scrolls when content exceeds 80% of the viewport.
+- Build passes cleanly.
+
+---
+
+## TASK 26 — Lock background scroll under the History modal ✅
+- `src/components/HistoryModal.tsx`: on mount, set `document.body.style.overflow = 'hidden'`; a cleanup restores the previous value on close/unmount. The page behind stays put while the modal's own body still scrolls. Scoped to this modal only — the score-input popups are untouched.
+- Build passes cleanly.
+
+---
+
+## TASK 27 — Styled "Clear history" confirmation ✅
+- `src/components/HistoryModal.tsx`: dropped `window.confirm` in favor of a `confirmClear` state driving an in-app dialog (z-[60], rounded card, 🗑️ + title + message, Cancel + destructive red confirm) matching the cancel-game confirm. Backdrop/Cancel dismisses; confirm clears history and bumps the read nonce.
+- i18n: added `clearHistoryTitle`; repurposed `clearHistoryConfirm` as the dialog's explanatory body (types + de + en).
+- Build + lint pass.
+
+---
+
+## TASK 28 — Dev-only "seed debug games" button ✅
+- `src/utils/gameHistory.ts`: added `seedDebugHistory()` — 10 two-player games (Player 1 vs Player 2) spread over the past ~10 days. Each player's card is built by `randomScores()` (0–2 random categories crossed → 0, rest given plausible per-category values), total via `calcGrandTotal`, ranked into results; records appended to existing history. Helpers: `randInt`, `makeId`, `plausibleScore`.
+- `src/components/HistoryModal.tsx`: footer shows a dashed amber "🐞 Seed 10 debug games" button guarded by `import.meta.env.DEV`, so it's dead-code-eliminated from production builds (the `seedDebugHistory` reference tree-shakes out). Clicking seeds and refreshes via the read nonce. Label is hardcoded (dev tool, not i18n).
+- Build + lint pass.
+
+---
+
+## TASK 29 — View the full scorecard of a past game ✅
+Tapping a game in the History modal's "Recent Games" tab now opens that game's completed board, read-only.
+- `src/utils/gameHistory.ts`: added optional `scores?: PlayerScores` to `GameResult` so a finished game's full per-player scorecard is persisted. `seedDebugHistory` now keeps the generated `randomScores()` on each result (so debug games are viewable too). Records written before this change lack `scores` and stay non-clickable.
+- `src/components/GameScreen.tsx`: the `recordGame` call now includes `scores: p.scores` per player.
+- `src/components/HistoryBoardModal.tsx` (new): a read-only board viewer. Reconstructs `Player[]` + a placement map from the record and renders the live `Scoreboard` with `currentPlayerIndex={-1}`, `isGameOver`, and no-op `onCellClick`/`onCross` — so no cell is active or editable and there's no undo/move-history/correction. Players show in finishing order (winner first) with medals; header shows the game's date. Locks background scroll while open.
+- `src/components/HistoryModal.tsx`: each game card is now a `<button>`, enabled only when every result has stored `scores` (`hasBoard`); clicking sets `boardRecord`, which renders `HistoryBoardModal` (z-[55], above the history list). A `›` chevron hints at clickability.
+- i18n: added `gameBoardTitle` + `viewGameBoard` (types + de + en).
+- Build + lint pass.
+
+---
+
+## TASK 30 — Paginate the Recent Games list ✅
+The History modal no longer renders all past games at once, fixing the open-time stall at 700+ games.
+- `src/components/HistoryModal.tsx`: added `GAMES_PAGE = 30` and a `visibleCount` state; the games tab renders `games.slice(0, visibleCount)`. A "Show more (N)" button appends another batch. `visibleCount` resets to one page whenever the history is re-read (clear/seed, via `nonce`).
+- i18n: added `showMore(remaining)` (types + de + en).
+- Build + lint pass.
+
+## TASK 31 — Reuse a single date formatter ✅
+- `src/components/HistoryModal.tsx`: replaced the per-card `new Date(ms).toLocaleString(...)` (which builds an `Intl` formatter on every call) with one `useMemo`'d `Intl.DateTimeFormat` keyed on `locale`, called via `.format(ms)`. Same output. Removes hundreds of formatter constructions per render.
+- Build + lint pass.
+
+## TASK 32 — Compact scorecard encoding ⏸️ DEFERRED
+Not implemented. Superseded for performance by Task 33 (lazy per-game scorecards), which stops loading scorecards during list rendering entirely; Task 32's only remaining value is `localStorage` footprint, not a concern at current volumes. Task spec kept in requirements.md as a documented future option that composes with Task 33.
+
+## TASK 33 — Lazy-load past-game scorecards ✅
+Scorecards no longer live inline in the history list, so `loadHistory()` (called on every modal open and every record mutation) parses only lightweight `{name, total, place}` records.
+- `src/utils/gameHistory.ts`:
+  - Per-game blobs stored under `knueffl-board-<id>` via `saveGameBoard` / `loadGameBoard` / `removeGameBoard`.
+  - `recordGame` splits scorecards out: writes the blob, strips `scores` from the list record, and sets a `hasBoard` flag. `removeRecord` and `clearHistory` also delete the associated board key(s).
+  - `getGameBoard(record)` returns scorecards in results order, preferring the lazy blob and falling back to legacy inline `scores`. `recordHasBoard(record)` reports whether a board is viewable (flag or legacy inline).
+  - `seedDebugHistory` writes boards under the per-game key and sets `hasBoard`.
+- `src/components/HistoryBoardModal.tsx`: loads scorecards via `getGameBoard(record)` on open instead of reading inline `r.scores`.
+- `src/components/HistoryModal.tsx`: clickability now uses `recordHasBoard(g)`.
+- Backward compatible: pre-Task-33 records with inline scores stay viewable. `GameResult.scores` remains as the transport into `recordGame` and the legacy fallback.
+- Build + lint pass.
+
+## TASK 34 — Open the winning game from the "Best game" leaderboard ✅
+On the Leaderboard tab's **Best single game** metric, each player row now opens the exact game where they set that best total.
+- `src/utils/gameHistory.ts`: added `bestGameId?: string` to `PlayerStats`. `aggregateStats` records the source game id whenever a player sets a new personal-best single-game total (strictly greater, so a tie keeps the first/older game). It flows through the final map via the existing rest-spread.
+- `src/components/HistoryModal.tsx`: memoized a `recordsById` lookup. On the `bestGame` metric each leaderboard row is now a `<button>`, enabled only when the winning game still has a viewable board (`recordHasBoard`); clicking sets `boardRecord`, reusing the same `HistoryBoardModal` (read-only, medals, date header) as Recent Games. Rows show a `›` chevron + hover affordance when openable. The **Wins** and **Average score** metrics aggregate many games, so their rows stay inert (`div`-like button, disabled). No new i18n strings — reuses `viewGameBoard`.
+- Build + lint pass.

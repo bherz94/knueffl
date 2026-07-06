@@ -263,3 +263,107 @@ These build on the shipped app. Devices in use: Pixel 10 (works), iPad and iPhon
 - Auto-focus the player 1 name input on mount so typing can begin immediately.
 - Natural tab order: name 1 → name 2 → … → (virtual dice toggle) → Start button. Verify the DOM order produces this without explicit `tabindex`.
 - Mouse/touch behavior is unchanged.
+
+## TASK 21 — Correction preserves history position
+
+- When a move is corrected via the move-history flow (Task 18), the corrected entry must stay in its **original position** in the history instead of jumping to the end.
+- Root cause to avoid: `removeMove` drops the original log entry and the correction appends a fresh entry with a new timestamp, so (with the modal sorting newest-first) the edited move surfaces at the top.
+- Capture the removed move's original log index and timestamp, and splice the replacement entry back at that index reusing the original timestamp. Fall back to appending when no original position is known.
+- Example: editing "3× fours" → "3× fives" replaces the entry in place; the surrounding move order is unchanged.
+
+## TASK 22 — Cancelling a correction restores the move
+
+- Cancelling an in-progress correction must fully restore the original move (cell value **and** its log entry), leaving the game exactly as it was before the correction started.
+- Root cause to avoid: selecting a history entry immediately removes the move (empties the cell so it's re-selectable); if cancel only clears the correction UI state, that removed move is lost and the player ends up one move short.
+- On cancel, revert the pending removal (e.g. via the existing undo snapshot) and then clear the correction state.
+- While a correction is in progress, the top-bar undo button must be disabled so the pending removal stays at the top of the undo stack and can be reverted cleanly.
+
+## TASK 23 — Game history + high-score leaderboard
+
+Give players a persistent record of past games and a cross-game leaderboard, all client-side.
+
+**Storage:**
+- Persist finished games to `localStorage` under a dedicated key (records are tiny; derived stats are computed, not stored). No backend — history is per-browser/device. (Cross-device sync would be a separate, larger effort.)
+- A finished-game record holds: a stable game id, a finished-at timestamp, the virtual-dice flag, and the ranked results (`name`, `total`, `place`).
+- Record a game when it ends; if the end is reverted via undo, remove the record. Recording must be idempotent (reload / post-game correction must not create duplicates) — dedupe by the game id.
+
+**Access:**
+- A dedicated 🏆 button in the `TopBar` (alongside ⚙️) opens a History/Leaderboard modal. Reachable from both the setup and game views.
+
+**Recent Games tab:**
+- List past games newest-first, each showing its timestamp (localized to the active language) and the full ranking (place · name · points), consistent with the game-end overlay.
+
+**Leaderboard tab:**
+- Aggregate players across all games, matching identity **case-insensitively** (display name uses the most recent casing seen).
+- Switchable metrics (tabs): **Best single game**, **Wins** (1st-place finishes), **Average score**. Show games-played as secondary context per player.
+
+**Housekeeping:**
+- Provide a confirm-guarded "Clear history" action.
+- All user-facing strings go through i18n (de + en).
+
+## TASK 24 — Keyboard entry in the upper-section popup (desktop)
+
+- Support a keyboard-only flow in the upper-section count popup (`UpperInputPopup`): with the popup open, typing a digit **1–5** selects that die count, and **Enter** confirms.
+- Example: click **Dreier** → popup opens → press `3` → press `Enter` commits 3 × 3 = 9.
+- **Escape** cancels the popup (same as the Cancel button / backdrop click).
+- Enter is a no-op while no count is selected (mirrors the disabled Confirm button). Digits outside 1–5 are ignored.
+- Mouse/touch behavior is unchanged.
+
+## TASK 25 — Cap the History/Leaderboard modal height
+
+- The "Verlauf & Bestenliste" (History/Leaderboard) modal must be capped at **80% of the viewport height**; when its content exceeds that, the body scrolls while the header (tabs) and footer stay fixed.
+
+## TASK 26 — Lock background scroll under the History modal
+
+- While the History/Leaderboard modal is open, the page behind it must not scroll — only the modal's own body scrolls. Restore normal page scrolling when it closes.
+- Scope to the History modal only; the score-input popups (upper/free) are unaffected.
+
+## TASK 27 — Styled "Clear history" confirmation
+
+- Replace the native `window.confirm` for "Clear history" with an in-app confirmation dialog styled to match the app (same visual language as the cancel-game confirm: rounded card, title + message, Cancel + destructive red confirm buttons; backdrop/Cancel dismisses without clearing).
+- Confirming clears the history and refreshes the modal; cancelling leaves data untouched.
+
+## TASK 28 — Dev-only "seed debug games" button
+
+- Provide a debug button (in the History modal footer) that writes sample history: 10 two-player games between "Player 1" and "Player 2" (giving each player 10 games), spread over the past ~10 days.
+- Each player's game has 0–2 random categories crossed out (scored 0); remaining categories get plausible values, and the grand total is computed with the real scoring logic. Records append to any existing history and the modal refreshes.
+- Must only be available in local dev — excluded from production builds (gate on `import.meta.env.DEV`).
+
+## TASK 29 — View the full scorecard of a past game
+
+- In the History modal's "Recent Games" tab, tapping a game card opens a **read-only** view of that game's completed scorecard (all players' filled-in cells, subtotals, bonus, totals, and final placements/medals).
+- The view is purely for looking back: **no** undo, no move-history, and no cell editing/correction are possible.
+- Persist each finished game's full per-player `PlayerScores` in the history record so the board can be reconstructed. Older records saved before this change (which lack per-player scores) simply aren't clickable.
+- Dev-seeded debug games also store their scores so they're viewable.
+- All user-facing strings go through i18n (de + en).
+
+## TASK 30 — Paginate the Recent Games list
+
+- The History modal's "Recent Games" tab must not render all past games at once. Show the most recent ~30 and reveal more in batches via a "Show more" action (batch size ~30), so a large history (700+ games) opens without a long render stall.
+- Newest-first ordering and the per-game card contents are unchanged. The Leaderboard tab is unaffected.
+
+## TASK 31 — Reuse a single date formatter in the History modal
+
+- Replace the per-card `Date.toLocaleString(...)` in the History modal with a single memoized `Intl.DateTimeFormat` instance (keyed on the active locale), used via `.format(ms)`. Constructing a formatter per card is a measurable cost across hundreds of games.
+- Output format is unchanged (dd.mm.yyyy hh:mm, localized). Apply the same pattern in the read-only board view for consistency.
+
+## TASK 32 — Compact scorecard encoding (DEFERRED / optional)
+
+- Optionally store each persisted scorecard as a fixed-order array of 13 numbers (e.g. `-1` = crossed, otherwise the scored value) instead of 13 `{status, value}` objects, shrinking the on-disk footprint ~5–8× and speeding parse/stringify.
+- **Status: not implemented.** Superseded for performance by TASK 33 (lazy per-game scorecards), which stops loading scorecards during list rendering entirely. TASK 32's remaining value is delaying the ~5 MB `localStorage` quota, which is not a concern at current volumes. The two compose (a compact array can be stored under the per-game key) if footprint ever becomes pressing.
+
+## TASK 33 — Lazy-load past-game scorecards
+
+- Stop storing full per-player scorecards inline in the `knueffl-history` list. Persist each finished game's scorecards under a separate per-game key (`knueffl-board-<id>`) and load them only when that game's board is opened. This keeps `loadHistory()` (called on every modal open and on every record mutation) parsing only lightweight `{name, total, place}` records.
+- `recordGame` splits scorecards out of the record: it writes the board blob under the per-game key and marks the light record with a `hasBoard` flag. `removeRecord` and `clearHistory` must also delete the associated board key(s).
+- Backward compatible: records written earlier that still carry inline `scores` remain viewable (fall back to inline scores when no per-game board key exists). The "clickable" detection in the list uses `hasBoard` OR legacy inline scores.
+- Dev-seeded games use the same per-game-key storage.
+
+## TASK 34 — Open the winning game from the "Best game" leaderboard
+
+- On the History modal's **Leaderboard** tab, only the **Best single game** metric points at one specific game per player. Make each row on that metric clickable: tapping a player opens the read-only board (`HistoryBoardModal`, Task 29) for the exact game where they achieved that best single-game total.
+- The other two metrics (**Wins**, **Average score**) aggregate across many games — there is no single game to open — so their rows stay non-interactive.
+- Only rows whose best game still has a viewable board (`recordHasBoard`) are clickable; if the winning game predates stored scorecards, the row is inert (no chevron/hover affordance).
+- Track the source game for each player's best single game in `aggregateStats` (e.g. a `bestGameId` on `PlayerStats`), updated whenever a new personal-best total is seen. Ties keep the first-seen game.
+- Reuse the existing `HistoryBoardModal` / `boardRecord` state — the board opens exactly as it does from Recent Games (same read-only view, medals, date header).
+- No new user-facing strings expected (reuses `viewGameBoard`).

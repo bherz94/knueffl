@@ -91,6 +91,24 @@ export interface Translations {
   place: (n: number) => string
   points: (n: number) => string
 
+  // Game history & high scores
+  history: string
+  historyTitle: string
+  recentGames: string
+  leaderboard: string
+  noGamesYet: string
+  statBestGame: string
+  statWins: string
+  statAvg: string
+  gamesPlayedCount: (n: number) => string
+  winsCount: (n: number) => string
+  clearHistory: string
+  clearHistoryTitle: string
+  clearHistoryConfirm: string
+  gameBoardTitle: string
+  viewGameBoard: string
+  showMore: (remaining: number) => string
+
   // Move history & correction (Task 18)
   moveHistory: string
   moveHistoryFor: (name: string) => string

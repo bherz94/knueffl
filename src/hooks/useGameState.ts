@@ -4,6 +4,7 @@ import { makeEmptyScores } from '../types/game'
 import { isPlayerDone } from '../utils/scoring'
 
 export interface GameState {
+  gameId: string
   players: Player[]
   currentPlayerIndex: number
   isGameOver: boolean
@@ -47,6 +48,7 @@ export function clearGameState() {
 
 function makeInitial(playerNames: string[]): GameState {
   return {
+    gameId: makeMoveId(),
     players: playerNames.map((name) => ({ name, scores: makeEmptyScores() })),
     currentPlayerIndex: 0,
     isGameOver: false,
@@ -73,9 +75,10 @@ export function useGameState(playerNames: string[]) {
       saved.state.players.length === playerNames.length &&
       saved.state.players.every((p, i) => p.name === playerNames[i])
     if (!match) return initial
-    // Normalize saves that predate diceValues / moveLog fields
+    // Normalize saves that predate diceValues / moveLog / gameId fields
     return {
       ...saved.state,
+      gameId: saved.state.gameId ?? makeMoveId(),
       diceValues: saved.state.diceValues ?? null,
       moveLog: saved.state.moveLog ?? [],
     }
@@ -161,10 +164,10 @@ export function useGameState(playerNames: string[]) {
     const moveLog = [...prev.moveLog, entry]
     const allDone = players.every((p) => isPlayerDone(p.scores))
     if (allDone) {
-      return { players, currentPlayerIndex: prev.currentPlayerIndex, isGameOver: true, diceValues: null, moveLog }
+      return { gameId: prev.gameId, players, currentPlayerIndex: prev.currentPlayerIndex, isGameOver: true, diceValues: null, moveLog }
     }
     const next = (prev.currentPlayerIndex + 1) % players.length
-    return { players, currentPlayerIndex: next, isGameOver: false, diceValues: null, moveLog }
+    return { gameId: prev.gameId, players, currentPlayerIndex: next, isGameOver: false, diceValues: null, moveLog }
   }
 
   function undo() {
