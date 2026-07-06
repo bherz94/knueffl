@@ -44,7 +44,7 @@ function hasLargeStraight(dice: number[]): boolean {
   )
 }
 
-function hasKniffel(dice: number[]): boolean {
+function hasKnueffl(dice: number[]): boolean {
   return new Set(dice).size === 1
 }
 
@@ -66,7 +66,7 @@ export function getDiceAutoScore(dice: number[], category: ScorableCategory): nu
     case 'fullHouse':     return hasFullHouse(dice)     ? 25 : null
     case 'smallStraight': return hasSmallStraight(dice) ? 30 : null
     case 'largeStraight': return hasLargeStraight(dice) ? 40 : null
-    case 'kniffel':       return hasKniffel(dice)       ? 50 : null
+    case 'Knueffl':       return hasKnueffl(dice)       ? 50 : null
     case 'chance':        return diceSum(dice)
     default:              return null
   }

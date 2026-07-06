@@ -1,7 +1,7 @@
-# Kniffel Web App — Requirements & Tasks
+# Knueffl Web App — Requirements & Tasks
 
 ## Overview
-A modern, responsive Kniffel (Yahtzee) scorekeeper web app built with React, Vite, and Tailwind CSS. One shared scoreboard with all players (2–6) shown side by side in columns. Players roll physical dice and enter their scores manually.
+A modern, responsive Knueffl (Yahtzee) scorekeeper web app built with React, Vite, and Tailwind CSS. One shared scoreboard with all players (2–6) shown side by side in columns. Players roll physical dice and enter their scores manually.
 
 ---
 
@@ -61,7 +61,7 @@ A modern, responsive Kniffel (Yahtzee) scorekeeper web app built with React, Vit
   - Full House (25 Punkte)
   - Kleine Straße (30 Punkte)
   - Große Straße (40 Punkte)
-  - Kniffel (50 Punkte)
+  - Knueffl (50 Punkte)
   - Chance
   - Gesamt unterer Teil (auto-calculated)
   - Gesamt oberer Teil (repeated — auto-calculated, same value as above)
@@ -120,7 +120,7 @@ A modern, responsive Kniffel (Yahtzee) scorekeeper web app built with React, Vit
 - Full House: single tap marks the cell with 25 points
 - Kleine Straße: single tap marks the cell with 30 points
 - Große Straße: single tap marks the cell with 40 points
-- Kniffel: single tap marks the cell with 50 points
+- Knueffl: single tap marks the cell with 50 points
 - No input needed — just one tap to confirm, double-tap to cross out
 - Consider a brief confirmation tap animation to distinguish from accidental touches
 - Once tapped, cell is locked

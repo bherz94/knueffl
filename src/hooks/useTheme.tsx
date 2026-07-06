@@ -11,7 +11,7 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 function getInitialTheme(): Theme {
-  const stored = localStorage.getItem('kniffel-theme')
+  const stored = localStorage.getItem('Knueffl-theme')
   if (stored === 'light' || stored === 'dark') return stored
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } else {
       root.classList.remove('dark')
     }
-    localStorage.setItem('kniffel-theme', theme)
+    localStorage.setItem('Knueffl-theme', theme)
   }, [theme])
 
   const toggleTheme = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'))

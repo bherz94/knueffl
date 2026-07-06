@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A client-only Kniffel (Yahtzee) score-keeping PWA for 2–6 players. React 19 + TypeScript + Vite + Tailwind CSS v4. No backend — all state lives in the browser and persists to `localStorage`. German is the default language. Players can be reusable **profiles** with optional local avatar photos, chosen at setup and carried through the score sheet and game history.
+A client-only Knueffl (Yahtzee) score-keeping PWA for 2–6 players. React 19 + TypeScript + Vite + Tailwind CSS v4. No backend — all state lives in the browser and persists to `localStorage`. German is the default language. Players can be reusable **profiles** with optional local avatar photos, chosen at setup and carried through the score sheet and game history.
 
 ## Commands
 

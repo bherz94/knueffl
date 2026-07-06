@@ -1,4 +1,4 @@
-# Kniffel — Implementation Progress
+# Knueffl — Implementation Progress
 
 ## TASK 1 — Project Scaffolding ✅
 - Vite + React + TypeScript project initialized
@@ -54,7 +54,7 @@
 - `ScoreCell` handles double-tap/double-click detection with 300ms window internally
 - Crossed cells show ✕, contribute 0 to totals, are locked
 ## TASK 10 — Lower Section: Fixed-Score Categories ✅
-- Single tap on fixed categories (Full House/Kleine/Große/Kniffel) calls `score()` immediately with fixed points
+- Single tap on fixed categories (Full House/Kleine/Große/Knueffl) calls `score()` immediately with fixed points
 - `src/hooks/useDoubleTap.ts` helper (also available for other uses)
 - `src/components/GameScreen.tsx` orchestrates all input routing and dispatches to correct handler
 ## TASK 11 — Auto-Calculated Fields ✅
@@ -128,7 +128,7 @@
   - **Language** (de/en) — consolidates the old language toggle
   - **Light / Dark** — consolidates the old theme toggle
   - **Font size** (S/M/L) — new
-- `src/hooks/useFontScale.tsx` (new): `FontScaleProvider` + `useFontScale()`; persists `kniffel-font-scale` to `localStorage` and sets `document.documentElement.style.fontSize` (14/16/18px) so all rem-based text scales app-wide on load
+- `src/hooks/useFontScale.tsx` (new): `FontScaleProvider` + `useFontScale()`; persists `Knueffl-font-scale` to `localStorage` and sets `document.documentElement.style.fontSize` (14/16/18px) so all rem-based text scales app-wide on load
 - Provider wired into `App.tsx` (inside Language/Theme providers)
 - Added i18n keys `settings`, `fontSize`, `fontSmall`, `fontMedium`, `fontLarge` to `types.ts`, `en.ts`, `de.ts`
 - Build passes cleanly

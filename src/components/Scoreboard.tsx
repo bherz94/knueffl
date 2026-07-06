@@ -30,7 +30,7 @@ function categoryHint(t: ReturnType<typeof useTranslation>['t'], meta: CategoryM
   if (meta.id === 'fullHouse') return t.fullHousePoints
   if (meta.id === 'smallStraight') return t.smallStraightPoints
   if (meta.id === 'largeStraight') return t.largeStraightPoints
-  if (meta.id === 'kniffel') return t.kniffelPoints
+  if (meta.id === 'Knueffl') return t.KnuefflPoints
   if (meta.id === 'chance') return t.allEyes
   if (meta.id === 'threeOfAKind' || meta.id === 'fourOfAKind') return t.allEyes
   return null

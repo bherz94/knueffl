@@ -9,7 +9,7 @@ const ROOT_PX: Record<FontScale, string> = {
   lg: '18px',
 }
 
-const STORAGE_KEY = 'kniffel-font-scale'
+const STORAGE_KEY = 'Knueffl-font-scale'
 
 interface FontScaleContextValue {
   fontScale: FontScale

@@ -14,9 +14,9 @@ export default defineConfig(({ command }) => ({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
       },
       manifest: {
-        name: 'Kniffel',
-        short_name: 'Kniffel',
-        description: 'Kniffel Scorekeeper für 2–6 Spieler',
+        name: 'Knueffl',
+        short_name: 'Knueffl',
+        description: 'Knueffl Scorekeeper für 2–6 Spieler',
         theme_color: '#6366f1',
         background_color: '#1e2130',
         display: 'standalone',

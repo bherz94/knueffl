@@ -2,7 +2,7 @@ import type { Translations } from './types'
 
 const en: Translations = {
   // App
-  appTitle: 'Kniffel',
+  appTitle: 'Knueffl',
 
   // Top bar
   language: 'Language',
@@ -49,8 +49,8 @@ const en: Translations = {
   smallStraightPoints: '30 points',
   largeStraight: 'Large Straight',
   largeStraightPoints: '40 points',
-  kniffel: 'Kniffel',
-  kniffelPoints: '50 points',
+  Knueffl: 'Knueffl',
+  KnuefflPoints: '50 points',
   chance: 'Chance',
   lowerTotal: 'Lower total',
   upperTotalRepeated: 'Upper total',

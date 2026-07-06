@@ -47,8 +47,8 @@ export interface Translations {
   smallStraightPoints: string
   largeStraight: string
   largeStraightPoints: string
-  kniffel: string
-  kniffelPoints: string
+  Knueffl: string
+  KnuefflPoints: string
   chance: string
   lowerTotal: string
   upperTotalRepeated: string

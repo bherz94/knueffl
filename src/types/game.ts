@@ -1,7 +1,7 @@
 export type ScorableCategory =
   | 'ones' | 'twos' | 'threes' | 'fours' | 'fives' | 'sixes'
   | 'threeOfAKind' | 'fourOfAKind' | 'fullHouse'
-  | 'smallStraight' | 'largeStraight' | 'kniffel' | 'chance'
+  | 'smallStraight' | 'largeStraight' | 'Knueffl' | 'chance'
 
 export type AutoCategory =
   | 'upperSubtotal' | 'bonus' | 'upperTotal'
@@ -56,7 +56,7 @@ export const LOWER_CATEGORIES: CategoryMeta[] = [
   { id: 'fullHouse', inputKind: 'fixed', fixedScore: 25 },
   { id: 'smallStraight', inputKind: 'fixed', fixedScore: 30 },
   { id: 'largeStraight', inputKind: 'fixed', fixedScore: 40 },
-  { id: 'kniffel', inputKind: 'fixed', fixedScore: 50 },
+  { id: 'Knueffl', inputKind: 'fixed', fixedScore: 50 },
   { id: 'chance', inputKind: 'free' },
 ]
 

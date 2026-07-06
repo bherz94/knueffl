@@ -270,7 +270,7 @@ function plausibleScore(cat: ScorableCategory): number {
     case 'fullHouse': return 25
     case 'smallStraight': return 30
     case 'largeStraight': return 40
-    case 'kniffel': return 50
+    case 'Knueffl': return 50
     case 'chance': return randInt(12, 30)
   }
 }
