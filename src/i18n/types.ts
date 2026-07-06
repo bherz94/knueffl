@@ -139,4 +139,8 @@ export interface Translations {
   close: string
   // Label shown in game history when a linked profile was deleted (Task 44)
   deletedProfile: string
+
+  // Error / empty states
+  gameBoardUnavailable: string
+  gameBoardError: string
 }

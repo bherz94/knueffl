@@ -140,6 +140,8 @@ const de: Translations = {
   manageProfiles: 'Profile verwalten',
   close: 'Schließen',
   deletedProfile: 'Gelöscht',
+  gameBoardUnavailable: 'Für dieses Spiel ist kein Spielblatt gespeichert.',
+  gameBoardError: 'Das Spielblatt konnte nicht angezeigt werden.',
 }
 
 export default de

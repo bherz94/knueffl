@@ -143,6 +143,8 @@ const en: Translations = {
   manageProfiles: 'Manage profiles',
   close: 'Close',
   deletedProfile: 'Deleted',
+  gameBoardUnavailable: 'No scorecard was saved for this game.',
+  gameBoardError: 'The scorecard could not be displayed.',
 }
 
 export default en

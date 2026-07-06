@@ -3,6 +3,7 @@ import { useTranslation } from '../hooks/useLanguage'
 import type { Player } from '../types/game'
 import { getGameBoard, resolveAvatar, isProfileDeleted, type GameRecord } from '../utils/gameHistory'
 import { Scoreboard } from './Scoreboard'
+import { ErrorBoundary } from './ErrorBoundary'
 
 interface Props {
   record: GameRecord
@@ -26,9 +27,10 @@ export function HistoryBoardModal({ record, onClose }: Props) {
   }, [])
 
   // Scorecards are loaded lazily from the per-game blob only now, on open (Task 33).
-  const players = useMemo<Player[]>(() => {
+  // `null` means no scorecard could be loaded — the caller renders an empty state.
+  const players = useMemo<Player[] | null>(() => {
     const boards = getGameBoard(record)
-    if (!boards) return []
+    if (!boards) return null
     // A deleted profile shows as the "Deleted" label with the colored-initial fallback (Task 44).
     return record.results.map((r, i) => {
       const deleted = isProfileDeleted(r.profileId)
@@ -80,19 +82,36 @@ export function HistoryBoardModal({ record, onClose }: Props) {
           </div>
         </div>
 
-        {/* Body — the read-only scorecard */}
+        {/* Body — the read-only scorecard. Guarded so a missing/legacy scorecard
+            shows a message instead of a blank page or a crash. */}
         <div className="overflow-auto px-2 pb-4">
-          <Scoreboard
-            players={players}
-            currentPlayerIndex={-1}
-            activeCellKey={null}
-            onCellClick={() => {}}
-            onCross={() => {}}
-            isGameOver
-            placements={placements}
-          />
+          {players == null ? (
+            <BoardMessage message={t.gameBoardUnavailable} />
+          ) : (
+            <ErrorBoundary fallback={<BoardMessage message={t.gameBoardError} />}>
+              <Scoreboard
+                players={players}
+                currentPlayerIndex={-1}
+                activeCellKey={null}
+                onCellClick={() => {}}
+                onCross={() => {}}
+                isGameOver
+                placements={placements}
+              />
+            </ErrorBoundary>
+          )}
         </div>
       </div>
+    </div>
+  )
+}
+
+// Centered placeholder shown when the scorecard is missing or fails to render.
+function BoardMessage({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
+      <div className="text-3xl" aria-hidden>🎲</div>
+      <p className="text-sm text-slate-500 dark:text-slate-400">{message}</p>
     </div>
   )
 }
