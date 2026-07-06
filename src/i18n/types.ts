@@ -7,6 +7,11 @@ export interface Translations {
   theme: string
   themeLight: string
   themeDark: string
+  settings: string
+  fontSize: string
+  fontSmall: string
+  fontMedium: string
+  fontLarge: string
 
   // Setup screen
   setupTitle: string
@@ -57,6 +62,8 @@ export interface Translations {
   crossOutHint: string
   enterScore: string
   allEyes: string
+  clear: string
+  backspace: string
 
   // Turn indicator
   currentTurn: (name: string) => string
@@ -83,4 +90,13 @@ export interface Translations {
   newGame: string
   place: (n: number) => string
   points: (n: number) => string
+
+  // Move history & correction (Task 18)
+  moveHistory: string
+  moveHistoryFor: (name: string) => string
+  noMoves: string
+  tapEntryToCorrect: string
+  correctionBanner: (name: string) => string
+  correctionHint: string
+  cancelCorrection: string
 }

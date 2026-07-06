@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import type { CategoryMeta, ScorableCategory } from '../types/game'
 import { useGameState } from '../hooks/useGameState'
+import type { MoveSlot } from '../hooks/useGameState'
 import { useTranslation } from '../hooks/useLanguage'
 import { calcGrandTotal } from '../utils/scoring'
 import { getDiceAutoScore } from '../utils/dice'
@@ -9,6 +10,7 @@ import { UpperInputPopup } from './UpperInputPopup'
 import { FreeInputPopup } from './FreeInputPopup'
 import { GameEndOverlay } from './GameEndOverlay'
 import { DiceModal } from './DiceModal'
+import { MoveHistoryModal } from './MoveHistoryModal'
 
 interface Props {
   playerNames: string[]
@@ -46,11 +48,31 @@ function calcPlacements(players: { name: string; scores: Parameters<typeof calcG
 
 export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Props) {
   const { t } = useTranslation()
-  const { state, score, cross, undo, setDice, canUndo } = useGameState(playerNames)
+  const { state, score, cross, correctScore, correctCross, removeMove, undo, setDice, canUndo } = useGameState(playerNames)
   const [popup, setPopup] = useState<ActivePopup>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [overlayOpen, setOverlayOpen] = useState(state.isGameOver)
   const [diceModalOpen, setDiceModalOpen] = useState(false)
+  // Task 18: move-history modal + correction mode (virtual dice OFF only)
+  const [historyPlayer, setHistoryPlayer] = useState<number | null>(null)
+  const [correctingPlayerIndex, setCorrectingPlayerIndex] = useState<number | null>(null)
+  // Original position/timestamp of the move being corrected, so its replacement
+  // stays in place in the history instead of jumping to the end.
+  const [correctionSlot, setCorrectionSlot] = useState<MoveSlot | null>(null)
+  // Task 19: preserve scroll position of the main table across scoring
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const pendingScrollTop = useRef<number | null>(null)
+
+  function saveScroll() {
+    pendingScrollTop.current = scrollRef.current?.scrollTop ?? null
+  }
+
+  useLayoutEffect(() => {
+    if (pendingScrollTop.current != null && scrollRef.current) {
+      scrollRef.current.scrollTop = pendingScrollTop.current
+    }
+    pendingScrollTop.current = null
+  })
 
   // diceValues lives in game state so undo restores them automatically
   const diceValues = state.diceValues
@@ -75,24 +97,46 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
 
   const placements = state.isGameOver ? calcPlacements(state.players) : undefined
 
+  // A correction writes the cell without advancing the turn (Task 18).
+  function commitScore(playerIndex: number, category: ScorableCategory, value: number) {
+    saveScroll()
+    if (correctingPlayerIndex != null) {
+      correctScore(playerIndex, category, value, correctionSlot ?? undefined)
+      setCorrectingPlayerIndex(null)
+      setCorrectionSlot(null)
+    } else {
+      score(playerIndex, category, value)
+    }
+  }
+
   function handleCellClick(playerIndex: number, meta: CategoryMeta) {
     if (diceValues) {
       const autoScore = getDiceAutoScore(diceValues, meta.id as ScorableCategory)
-      if (autoScore !== null) score(playerIndex, meta.id as ScorableCategory, autoScore)
+      if (autoScore !== null) {
+        saveScroll()
+        score(playerIndex, meta.id as ScorableCategory, autoScore)
+      }
       // null = combination invalid with these dice → do nothing
       return
     }
     if (meta.inputKind === 'upper') {
       setPopup({ kind: 'upper', playerIndex, meta })
     } else if (meta.inputKind === 'fixed') {
-      score(playerIndex, meta.id as ScorableCategory, meta.fixedScore!)
+      commitScore(playerIndex, meta.id as ScorableCategory, meta.fixedScore!)
     } else {
       setPopup({ kind: 'free', playerIndex, meta })
     }
   }
 
   function handleCross(playerIndex: number, category: ScorableCategory) {
-    cross(playerIndex, category)
+    saveScroll()
+    if (correctingPlayerIndex != null) {
+      correctCross(playerIndex, category, correctionSlot ?? undefined)
+      setCorrectingPlayerIndex(null)
+      setCorrectionSlot(null)
+    } else {
+      cross(playerIndex, category)
+    }
   }
 
   function closePopup() {
@@ -101,14 +145,34 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
 
   function handleUpperConfirm(value: number) {
     if (!popup) return
-    score(popup.playerIndex, popup.meta.id as ScorableCategory, value)
+    commitScore(popup.playerIndex, popup.meta.id as ScorableCategory, value)
     closePopup()
   }
 
   function handleFreeConfirm(value: number) {
     if (!popup) return
-    score(popup.playerIndex, popup.meta.id as ScorableCategory, value)
+    commitScore(popup.playerIndex, popup.meta.id as ScorableCategory, value)
     closePopup()
+  }
+
+  // Cancelling a correction reverts the removeMove that started it (Task 18/22),
+  // so the original move isn't lost. removeMove pushed a history snapshot, so undo
+  // restores the cell + log entry cleanly. Undo is disabled while correcting, so the
+  // top of the history stack is guaranteed to be that removal.
+  function cancelCorrection() {
+    undo()
+    setCorrectingPlayerIndex(null)
+    setCorrectionSlot(null)
+  }
+
+  function handleHistorySelect(moveId: string) {
+    const player = historyPlayer
+    const index = state.moveLog.findIndex((m) => m.id === moveId)
+    const original = index >= 0 ? state.moveLog[index] : null
+    removeMove(moveId)
+    setHistoryPlayer(null)
+    setCorrectingPlayerIndex(player)
+    setCorrectionSlot(original ? { index, timestamp: original.timestamp } : null)
   }
 
   function handleDiceFinish(values: number[]) {
@@ -166,7 +230,7 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
           <button
             type="button"
             onClick={undo}
-            disabled={!canUndo}
+            disabled={!canUndo || correctingPlayerIndex != null}
             className="flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors"
           >
             ↩ {t.undo}
@@ -174,7 +238,24 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
         </div>
       )}
 
-      <div className="flex-1 overflow-auto p-2">
+      {/* Correction banner (Task 18) */}
+      {correctingPlayerIndex != null && (
+        <div className="bg-amber-500 dark:bg-amber-600 text-white flex items-center justify-between py-2 px-4 gap-3">
+          <span className="text-sm font-semibold min-w-0">
+            ✏️ {t.correctionBanner(state.players[correctingPlayerIndex]?.name ?? '')}
+            <span className="ml-2 text-amber-100 text-xs hidden sm:inline">{t.correctionHint}</span>
+          </span>
+          <button
+            type="button"
+            onClick={cancelCorrection}
+            className="flex-shrink-0 px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-semibold transition-colors"
+          >
+            ✕ {t.cancelCorrection}
+          </button>
+        </div>
+      )}
+
+      <div ref={scrollRef} className="flex-1 overflow-auto p-2">
         <Scoreboard
           players={state.players}
           currentPlayerIndex={state.currentPlayerIndex}
@@ -184,6 +265,8 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
           isGameOver={state.isGameOver}
           placements={placements}
           diceValues={diceValues}
+          onHeaderClick={!virtualDice ? (i) => setHistoryPlayer(i) : undefined}
+          correctingPlayerIndex={correctingPlayerIndex}
         />
       </div>
 
@@ -230,6 +313,16 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
         <DiceModal
           onFinish={handleDiceFinish}
           onClose={() => setDiceModalOpen(false)}
+        />
+      )}
+
+      {/* Move-history modal (Task 18) */}
+      {historyPlayer != null && (
+        <MoveHistoryModal
+          playerName={state.players[historyPlayer]?.name ?? ''}
+          moves={state.moveLog.filter((m) => m.playerIndex === historyPlayer)}
+          onSelectEntry={handleHistorySelect}
+          onClose={() => setHistoryPlayer(null)}
         />
       )}
 

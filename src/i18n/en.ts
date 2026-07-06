@@ -9,6 +9,11 @@ const en: Translations = {
   theme: 'Theme',
   themeLight: 'Light',
   themeDark: 'Dark',
+  settings: 'Settings',
+  fontSize: 'Font size',
+  fontSmall: 'S',
+  fontMedium: 'M',
+  fontLarge: 'L',
 
   // Setup screen
   setupTitle: 'New Game',
@@ -59,6 +64,8 @@ const en: Translations = {
   crossOutHint: 'Hold to cross out',
   enterScore: 'Enter score (0–30)',
   allEyes: 'Count all pips',
+  clear: 'Clear',
+  backspace: 'Backspace',
 
   // Turn indicator
   currentTurn: (name: string) => `${name}'s turn`,
@@ -88,6 +95,15 @@ const en: Translations = {
     return map[n] ?? `${n}th`
   },
   points: (n: number) => `${n} points`,
+
+  // Move history & correction (Task 18)
+  moveHistory: 'Move history',
+  moveHistoryFor: (name: string) => `${name} — move history`,
+  noMoves: 'No moves yet',
+  tapEntryToCorrect: 'Tap an entry to remove it and correct it',
+  correctionBanner: (name: string) => `Correcting ${name}`,
+  correctionHint: 'Tap an empty cell to enter the correct value',
+  cancelCorrection: 'Cancel correction',
 }
 
 export default en

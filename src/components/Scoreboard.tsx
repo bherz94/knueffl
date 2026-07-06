@@ -2,9 +2,10 @@ import type { Player, ScorableCategory, CategoryMeta } from '../types/game'
 import { UPPER_CATEGORIES, LOWER_CATEGORIES } from '../types/game'
 import {
   calcUpperSubtotal, calcBonus, calcUpperTotal,
-  calcLowerTotal, calcGrandTotal, isPlayerDone,
+  calcLowerTotal, calcGrandTotal,
 } from '../utils/scoring'
 import { getDiceAutoScore } from '../utils/dice'
+import { categoryLabel } from '../utils/labels'
 import { useTranslation } from '../hooks/useLanguage'
 import { PlayerHeader } from './PlayerHeader'
 import { ScoreCell } from './ScoreCell'
@@ -20,17 +21,8 @@ interface Props {
   isGameOver?: boolean
   placements?: Record<number, number>
   diceValues?: number[] | null
-}
-
-function categoryLabel(t: ReturnType<typeof useTranslation>['t'], id: ScorableCategory): string {
-  const map: Record<ScorableCategory, string> = {
-    ones: t.ones, twos: t.twos, threes: t.threes,
-    fours: t.fours, fives: t.fives, sixes: t.sixes,
-    threeOfAKind: t.threeOfAKind, fourOfAKind: t.fourOfAKind,
-    fullHouse: t.fullHouse, smallStraight: t.smallStraight,
-    largeStraight: t.largeStraight, kniffel: t.kniffel, chance: t.chance,
-  }
-  return map[id]
+  onHeaderClick?: (playerIndex: number) => void
+  correctingPlayerIndex?: number | null
 }
 
 function categoryHint(t: ReturnType<typeof useTranslation>['t'], meta: CategoryMeta): string | null {
@@ -44,9 +36,10 @@ function categoryHint(t: ReturnType<typeof useTranslation>['t'], meta: CategoryM
   return null
 }
 
-export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellClick, onCross, isGameOver, placements, diceValues }: Props) {
+export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellClick, onCross, isGameOver, placements, diceValues, onHeaderClick, correctingPlayerIndex }: Props) {
   const { t } = useTranslation()
   const colSpan = players.length + 1
+  const isCorrecting = correctingPlayerIndex != null
   const activeIndex = isGameOver ? -1 : currentPlayerIndex
 
   const winnerSet: Set<number> = new Set(
@@ -55,15 +48,18 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
       : []
   )
 
+  // During a correction only the corrected player's empty cells are interactive.
+  const interactiveIndex = isCorrecting ? correctingPlayerIndex : currentPlayerIndex
+
   function handleCellClick(playerIndex: number, meta: CategoryMeta) {
-    if (playerIndex !== currentPlayerIndex) return
+    if (playerIndex !== interactiveIndex) return
     const cell = players[playerIndex].scores[meta.id]
     if (cell.status !== 'empty') return
     onCellClick(playerIndex, meta)
   }
 
   function handleCellDoubleClick(playerIndex: number, meta: CategoryMeta) {
-    if (playerIndex !== currentPlayerIndex) return
+    if (playerIndex !== interactiveIndex) return
     const cell = players[playerIndex].scores[meta.id]
     if (cell.status !== 'empty') return
     onCross(playerIndex, meta.id)
@@ -104,6 +100,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
                 player.scores[meta.id].status === 'empty' &&
                 getDiceAutoScore(diceValues, meta.id) !== null
               }
+              isCorrectable={isCorrecting && pi === correctingPlayerIndex && player.scores[meta.id].status === 'empty'}
               onSingleClick={() => handleCellClick(pi, meta)}
               onDoubleClick={() => handleCellDoubleClick(pi, meta)}
             />
@@ -166,12 +163,28 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
                   i === activeIndex ? 'bg-indigo-50/60 dark:bg-indigo-900/10' : 'bg-white dark:bg-slate-900',
                 ].join(' ')}
               >
-                <PlayerHeader
-                  name={player.name}
-                  isActive={i === activeIndex}
-                  index={i}
-                  place={placements?.[i]}
-                />
+                {onHeaderClick ? (
+                  <button
+                    type="button"
+                    onClick={() => onHeaderClick(i)}
+                    className="w-full rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    title={t.moveHistory}
+                  >
+                    <PlayerHeader
+                      name={player.name}
+                      isActive={i === activeIndex}
+                      index={i}
+                      place={placements?.[i]}
+                    />
+                  </button>
+                ) : (
+                  <PlayerHeader
+                    name={player.name}
+                    isActive={i === activeIndex}
+                    index={i}
+                    place={placements?.[i]}
+                  />
+                )}
               </th>
             ))}
           </tr>
@@ -188,7 +201,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
           {LOWER_CATEGORIES.map((meta, idx) => renderCategoryRow(meta, idx % 2 === 1))}
           {renderAutoRow(t.lowerTotal, (p) => calcLowerTotal(p.scores))}
           {renderAutoRow(t.upperTotalRepeated, (p) => calcUpperTotal(p.scores))}
-          {renderAutoRow(t.grandTotal, (p) => calcGrandTotal(p.scores), true, (p) => isPlayerDone(p.scores), true)}
+          {renderAutoRow(t.grandTotal, (p) => calcGrandTotal(p.scores), true, () => !!isGameOver, true)}
         </tbody>
       </table>
       </div>

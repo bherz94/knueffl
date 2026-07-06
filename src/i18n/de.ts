@@ -9,6 +9,11 @@ const de: Translations = {
   theme: 'Design',
   themeLight: 'Hell',
   themeDark: 'Dunkel',
+  settings: 'Einstellungen',
+  fontSize: 'Schriftgröße',
+  fontSmall: 'S',
+  fontMedium: 'M',
+  fontLarge: 'L',
 
   // Setup screen
   setupTitle: 'Neues Spiel',
@@ -59,6 +64,8 @@ const de: Translations = {
   crossOutHint: 'Gedrückt halten zum Streichen',
   enterScore: 'Punkte eingeben (0–30)',
   allEyes: 'Alle Augen zählen',
+  clear: 'Löschen',
+  backspace: 'Rücktaste',
 
   // Turn indicator
   currentTurn: (name) => `${name} ist dran`,
@@ -85,6 +92,15 @@ const de: Translations = {
   newGame: 'Neues Spiel',
   place: (n) => `${n}.`,
   points: (n) => `${n} Punkte`,
+
+  // Move history & correction (Task 18)
+  moveHistory: 'Spielverlauf',
+  moveHistoryFor: (name) => `${name} — Spielverlauf`,
+  noMoves: 'Noch keine Züge',
+  tapEntryToCorrect: 'Tippe einen Eintrag an, um ihn zu entfernen und zu korrigieren',
+  correctionBanner: (name) => `Korrektur für ${name}`,
+  correctionHint: 'Tippe eine leere Zelle an, um den korrekten Wert einzugeben',
+  cancelCorrection: 'Korrektur abbrechen',
 }
 
 export default de

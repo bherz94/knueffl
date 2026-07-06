@@ -6,13 +6,14 @@ interface Props {
   isActive: boolean
   isSelected: boolean
   isViable?: boolean
+  isCorrectable?: boolean
   onSingleClick: () => void
   onDoubleClick: () => void
 }
 
 const HOLD_MS = 300
 
-export function ScoreCell({ cell, isActive, isSelected, isViable, onSingleClick, onDoubleClick }: Props) {
+export function ScoreCell({ cell, isActive, isSelected, isViable, isCorrectable, onSingleClick, onDoubleClick }: Props) {
   const isEmpty = cell.status === 'empty'
   const isCrossed = cell.status === 'crossed'
   const isScored = cell.status === 'scored'
@@ -65,6 +66,8 @@ export function ScoreCell({ cell, isActive, isSelected, isViable, onSingleClick,
   function getCellClass() {
     if (isScored) return 'bg-slate-100 dark:bg-slate-600/60 border border-slate-300 dark:border-slate-500 text-slate-800 dark:text-slate-100 cursor-default'
     if (isCrossed) return 'bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-600 cursor-default'
+    // Correction target: empty cell in the player being corrected (Task 18)
+    if (isCorrectable) return 'bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-500 dark:border-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 cursor-pointer'
     if (!isActive) return 'bg-white dark:bg-slate-700 border border-dashed border-slate-200 dark:border-slate-600 cursor-default'
     if (isSelected) return 'bg-emerald-100 dark:bg-emerald-900/40 border-2 border-emerald-500 dark:border-emerald-400 cursor-pointer'
     if (pressing) return 'border-2 border-emerald-400 dark:border-emerald-500 cursor-pointer'

@@ -185,7 +185,81 @@ Split the UI into focused components (no giant App.tsx):
 
 ## Non-Goals (explicit exclusions)
 
-- No backend, no persistence across sessions (in-memory only)
-- No dice rolling animation or digital dice — players roll physical dice
-- No undo functionality
+- No backend, no persistence across sessions (in-memory only) — *superseded: game state now persists to `localStorage` (see `useGameState`)*
+- No dice rolling animation or digital dice — players roll physical dice — *superseded: optional virtual dice mode added*
+- No undo functionality — *superseded: undo implemented*
 - No multi-game tracking (one game per session)
+
+---
+
+# Enhancements — Round 2
+
+These build on the shipped app. Devices in use: Pixel 10 (works), iPad and iPhone (issues below).
+
+## TASK 15 — Numeric-only input on iPad ("alle Augen zählen" cells)
+
+**Problem:** `FreeInputPopup` (Dreierpasch, Viererpasch, Chance — only reachable when virtual dice is OFF) uses `<input type="number" inputMode="numeric">`. iPhone/Android honor `inputMode` and show a number pad, but **iPad Safari ignores `inputMode`/`pattern` and always shows the full alphanumeric keyboard** (known WebKit behavior, no attribute fixes it).
+
+**Fix — custom in-modal number pad (no OS keyboard):**
+- Replace the text `<input>` in `FreeInputPopup` with an on-screen keypad rendered inside the modal, matching the button style of `UpperInputPopup`.
+- Keypad: digits `0–9`, a backspace/delete key, and a clear key; a large read-only display of the current entry.
+- Keep existing validation: valid range 1–30; Confirm disabled until valid.
+- Keep Cancel/Confirm buttons. No reliance on any native keyboard, so behavior is identical on every device.
+- **Desktop hardware keyboard still works:** while the modal is open, capture key events so physical number keys (`0–9`) append digits, `Backspace` deletes, `Enter` confirms (when valid), and `Escape` cancels — mirroring the on-screen keypad.
+- Verify tap targets ≥ 44px (iPad/touch requirement from Task 14).
+
+## TASK 16 — Rotate starting order on New Game
+
+- On "New Game", rotate the player order by one so a different player throws first each game.
+- Mapping requested: previous last player → new first (index 0); previous player 1 → index 1; previous player 2 → index 2; etc. (i.e. right-rotate the player list by 1).
+- Names, and any per-player settings, travel with the player during rotation.
+- Applies to the "New Game" action from the game-end state (`onNewGame`); the fresh game starts with `currentPlayerIndex = 0`, which is now the previously-last player.
+- Setup screen order is unaffected for a brand-new (first) game.
+
+## TASK 17 — Defer Endsumme until game is finished
+
+- While the game is in progress, the **Endsumme** (grand total, `calcGrandTotal`) must NOT be shown — display a placeholder (e.g. `—`) in each player's Endsumme cell.
+- The intermediate auto-cells stay live: **Gesamt (upper subtotal)**, **Bonus**, **Gesamt oberer Teil**, **Gesamt unterer Teil** continue to update per input.
+- Only once **all** players have filled all 18 cells (`state.isGameOver`) does the Endsumme populate for everyone at once.
+- Winner screen / placements are computed only at game end, so they are unaffected.
+- Implementation touch point: the Endsumme `AutoCell` in `Scoreboard` should receive `isGameOver` and render the placeholder until true.
+
+## TASK 18 — Editable per-player move history (virtual dice OFF)
+
+**Goal:** make it easy to spot and fix a mis-entry (e.g. "4× 3" recorded where "4× 2" was meant, or a value put in the wrong category entirely) even several turns later.
+
+**Move log (state):**
+- Add an ordered move log to game state, persisted alongside the existing save. Each entry: `{ id, playerIndex, category, kind: 'scored' | 'crossed', value?, timestamp }`.
+- Append an entry on every `score` and `cross`. Undo must also revert the log.
+
+**Per-player history modal:**
+- Only available when virtual dice is OFF.
+- Tapping a player's name / column header opens a **centered modal** listing that player's moves, newest first, each showing the category label and its value (or ✕ for crossed-out).
+
+**Correcting an entry (handles wrong-cell mistakes):**
+- Tapping a history entry **removes** that move and reverts its cell to empty. If the game had ended, `isGameOver` reverts to false.
+- The modal closes and the app enters a **correction mode** bound to that player: the scoreboard highlights that player's empty cells, and a banner/badge indicates a correction is in progress (with a way to cancel it).
+- The user then taps the correct cell (any empty cell in that player's column) and enters a fresh value via the normal input flow. This is why a simple pre-filled edit popup is insufficient — the fix may need a different category.
+- A correction **does not advance the turn** and does not change `currentPlayerIndex`; it writes the new value, appends/updates the move log, and exits correction mode.
+- All derived totals (subtotals, bonus, Endsumme) recompute automatically from the corrected cell.
+
+## TASK 19 — Preserve scroll position + Options menu
+
+**Part A — keep scroll position after scoring:**
+- On the phone/tablet the main table scrolls (the `overflow-auto` container in `GameScreen`). After entering a score, the view currently jumps (to bottom), losing the user's place.
+- Capture the scroll container's `scrollTop` when an input is committed and restore it after the cell updates and the popup closes, so the user stays exactly where they were.
+
+**Part B — Options cogwheel (top bar):**
+- Add a settings/cogwheel button in `TopBar` opening a submenu/popover containing:
+  - **Language** (de/en) — consolidates the existing language toggle.
+  - **Light / Dark mode** — consolidates the existing theme toggle.
+  - **Font size** — a base font-size / scale control (e.g. S / M / L) that sets the app's root font size so all text scales.
+- All three preferences persist to `localStorage` and apply app-wide on load.
+
+## TASK 20 — Keyboard-driven setup (Tab + Enter to start)
+
+- Support a keyboard-only flow on `SetupScreen`: type player 1's name → `Tab` → type player 2's name → `Enter` starts the game.
+- Pressing `Enter` in any name input triggers Start when all names are filled (same guard as the button, `allFilled`); if not all names are filled, `Enter` does nothing (or moves focus to the next empty field — implementer's choice, prefer just no-op to avoid surprises).
+- Auto-focus the player 1 name input on mount so typing can begin immediately.
+- Natural tab order: name 1 → name 2 → … → (virtual dice toggle) → Start button. Verify the DOM order produces this without explicit `tabindex`.
+- Mouse/touch behavior is unchanged.

@@ -37,6 +37,15 @@ export function SetupScreen({ onStart, initialNames, initialVirtualDice }: Props
     onStart(names.map((n) => n.trim()), virtualDice)
   }
 
+  // Task 20: Enter in any name field starts the game when all names are filled;
+  // otherwise it's a no-op (avoids surprising focus jumps).
+  function handleNameKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (allFilled) handleStart()
+    }
+  }
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
@@ -113,6 +122,8 @@ export function SetupScreen({ onStart, initialNames, initialVirtualDice }: Props
                     type="text"
                     value={name}
                     onChange={(e) => setName(i, e.target.value)}
+                    onKeyDown={handleNameKeyDown}
+                    autoFocus={i === 0}
                     placeholder={t.playerNamePlaceholder(i + 1)}
                     maxLength={20}
                     className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition"

@@ -21,6 +21,15 @@ export interface Player {
   scores: PlayerScores
 }
 
+export interface MoveEntry {
+  id: string
+  playerIndex: number
+  category: ScorableCategory
+  kind: 'scored' | 'crossed'
+  value?: number
+  timestamp: number
+}
+
 export type InputKind = 'upper' | 'free' | 'fixed'
 
 export interface CategoryMeta {

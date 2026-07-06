@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { Player, ScorableCategory } from '../types/game'
+import type { Player, ScorableCategory, MoveEntry } from '../types/game'
 import { makeEmptyScores } from '../types/game'
 import { isPlayerDone } from '../utils/scoring'
 
@@ -8,6 +8,24 @@ export interface GameState {
   currentPlayerIndex: number
   isGameOver: boolean
   diceValues: number[] | null
+  moveLog: MoveEntry[]
+}
+
+function makeMoveId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
+// Identifies where a corrected move originally sat, so its replacement keeps the same
+// spot in the log (index) and ordering (timestamp) instead of being appended.
+export interface MoveSlot {
+  index: number
+  timestamp: number
+}
+
+function insertMove(moveLog: MoveEntry[], entry: MoveEntry, slot?: MoveSlot): MoveEntry[] {
+  if (slot == null || slot.index < 0 || slot.index > moveLog.length) return [...moveLog, entry]
+  return [...moveLog.slice(0, slot.index), entry, ...moveLog.slice(slot.index)]
 }
 
 const GAME_KEY = 'knueffl-game'
@@ -33,6 +51,7 @@ function makeInitial(playerNames: string[]): GameState {
     currentPlayerIndex: 0,
     isGameOver: false,
     diceValues: null,
+    moveLog: [],
   }
 }
 
@@ -54,8 +73,12 @@ export function useGameState(playerNames: string[]) {
       saved.state.players.length === playerNames.length &&
       saved.state.players.every((p, i) => p.name === playerNames[i])
     if (!match) return initial
-    // Normalize saves that predate diceValues field
-    return { ...saved.state, diceValues: saved.state.diceValues ?? null }
+    // Normalize saves that predate diceValues / moveLog fields
+    return {
+      ...saved.state,
+      diceValues: saved.state.diceValues ?? null,
+      moveLog: saved.state.moveLog ?? [],
+    }
   })
 
   useEffect(() => {
@@ -66,11 +89,9 @@ export function useGameState(playerNames: string[]) {
 
   function score(playerIndex: number, category: ScorableCategory, value: number) {
     setState((prev) => {
-      const players = prev.players.map((p, i) => {
-        if (i !== playerIndex) return p
-        return { ...p, scores: { ...p.scores, [category]: { status: 'scored' as const, value } } }
-      })
-      const next = advance(prev, players)
+      const players = writeCell(prev.players, playerIndex, category, { status: 'scored', value })
+      const entry: MoveEntry = { id: makeMoveId(), playerIndex, category, kind: 'scored', value, timestamp: Date.now() }
+      const next = advance(prev, players, entry)
       setHistory((h) => [...h, prev])
       return next
     })
@@ -78,23 +99,72 @@ export function useGameState(playerNames: string[]) {
 
   function cross(playerIndex: number, category: ScorableCategory) {
     setState((prev) => {
-      const players = prev.players.map((p, i) => {
-        if (i !== playerIndex) return p
-        return { ...p, scores: { ...p.scores, [category]: { status: 'crossed' as const } } }
-      })
-      const next = advance(prev, players)
+      const players = writeCell(prev.players, playerIndex, category, { status: 'crossed' })
+      const entry: MoveEntry = { id: makeMoveId(), playerIndex, category, kind: 'crossed', timestamp: Date.now() }
+      const next = advance(prev, players, entry)
       setHistory((h) => [...h, prev])
       return next
     })
   }
 
-  function advance(prev: GameState, players: Player[]): GameState {
+  // Correction: write a cell for a player WITHOUT advancing the turn (Task 18).
+  // `slot` (from the move being corrected) preserves the entry's original position
+  // and timestamp so the correction replaces it in place instead of jumping to the end.
+  function correctScore(playerIndex: number, category: ScorableCategory, value: number, slot?: MoveSlot) {
+    setState((prev) => {
+      const players = writeCell(prev.players, playerIndex, category, { status: 'scored', value })
+      const entry: MoveEntry = { id: makeMoveId(), playerIndex, category, kind: 'scored', value, timestamp: slot?.timestamp ?? Date.now() }
+      const allDone = players.every((p) => isPlayerDone(p.scores))
+      setHistory((h) => [...h, prev])
+      return { ...prev, players, isGameOver: allDone, moveLog: insertMove(prev.moveLog, entry, slot) }
+    })
+  }
+
+  function correctCross(playerIndex: number, category: ScorableCategory, slot?: MoveSlot) {
+    setState((prev) => {
+      const players = writeCell(prev.players, playerIndex, category, { status: 'crossed' })
+      const entry: MoveEntry = { id: makeMoveId(), playerIndex, category, kind: 'crossed', timestamp: slot?.timestamp ?? Date.now() }
+      const allDone = players.every((p) => isPlayerDone(p.scores))
+      setHistory((h) => [...h, prev])
+      return { ...prev, players, isGameOver: allDone, moveLog: insertMove(prev.moveLog, entry, slot) }
+    })
+  }
+
+  // Remove a logged move and revert its cell to empty (starts a correction, Task 18).
+  function removeMove(moveId: string) {
+    setState((prev) => {
+      const entry = prev.moveLog.find((m) => m.id === moveId)
+      if (!entry) return prev
+      const players = writeCell(prev.players, entry.playerIndex, entry.category, { status: 'empty' })
+      setHistory((h) => [...h, prev])
+      return {
+        ...prev,
+        players,
+        isGameOver: false,
+        moveLog: prev.moveLog.filter((m) => m.id !== moveId),
+      }
+    })
+  }
+
+  function writeCell(
+    players: Player[],
+    playerIndex: number,
+    category: ScorableCategory,
+    cell: Player['scores'][ScorableCategory],
+  ): Player[] {
+    return players.map((p, i) =>
+      i !== playerIndex ? p : { ...p, scores: { ...p.scores, [category]: cell } },
+    )
+  }
+
+  function advance(prev: GameState, players: Player[], entry: MoveEntry): GameState {
+    const moveLog = [...prev.moveLog, entry]
     const allDone = players.every((p) => isPlayerDone(p.scores))
     if (allDone) {
-      return { players, currentPlayerIndex: prev.currentPlayerIndex, isGameOver: true, diceValues: null }
+      return { players, currentPlayerIndex: prev.currentPlayerIndex, isGameOver: true, diceValues: null, moveLog }
     }
     const next = (prev.currentPlayerIndex + 1) % players.length
-    return { players, currentPlayerIndex: next, isGameOver: false, diceValues: null }
+    return { players, currentPlayerIndex: next, isGameOver: false, diceValues: null, moveLog }
   }
 
   function undo() {
@@ -115,5 +185,5 @@ export function useGameState(playerNames: string[]) {
     setState(makeInitial(names))
   }
 
-  return { state, score, cross, undo, setDice, reset, canUndo: history.length > 0 }
+  return { state, score, cross, correctScore, correctCross, removeMove, undo, setDice, reset, canUndo: history.length > 0 }
 }
