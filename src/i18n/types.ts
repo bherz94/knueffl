@@ -137,6 +137,8 @@ export interface Translations {
   // Manage profiles (Task 41)
   manageProfiles: string
   close: string
+  // Badge on a profile already used by another slot in this game (Task 46)
+  profileInGame: string
   // Label shown in game history when a linked profile was deleted (Task 44)
   deletedProfile: string
 

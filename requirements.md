@@ -472,3 +472,12 @@ Make the dev-only debug seeding produce **real profiles** linked to the fabricat
 - In `seedDebugHistory` (dev-only, `src/utils/gameHistory.ts`): first ensure a small fixed roster of predefined profiles exists (e.g. ~6 named players) via `upsertProfile` using **stable ids**, so repeated seeding does not duplicate them. No avatars needed (colored-initial fallback is fine).
 - Each seeded game picks a random subset (2–6) of these profiles; every `GameResult` carries the profile's `profileId` and `name` (and `avatar` if the profile has one) so seeded history links to real, editable/deletable profiles — letting Task 44's "deleted" and leaderboard-exclusion behavior be tested by deleting a seeded profile.
 - Keep it strictly dev-only (still gated behind `import.meta.env.DEV` at the call site) and self-contained in `gameHistory.ts` (or a small helper it calls).
+
+## TASK 46 — Allow each profile only once per game (setup screen)
+
+Prevent the same profile from being assigned to more than one player slot in a single game.
+
+- `ProfilePickerModal` (picker mode only): accept an optional `disabledProfileIds?: string[]`. Profiles whose id is in that set still appear in the list but are non-selectable (disabled button, dimmed) with a small "in game" badge. The manager mode (no `onSelect`) is unaffected.
+- `SetupScreen`: when opening the picker for a slot, pass the `profileId`s of all **other** filled slots as `disabledProfileIds`, so a profile already used elsewhere in the current setup can't be picked again. The slot's own current profile is not disabled.
+- i18n: add `profileInGame` (DE „im Spiel", EN „in game").
+- Profile-less / manually-unnamed slots impose no restriction; only linked profiles are deduplicated.

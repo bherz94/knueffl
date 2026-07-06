@@ -13,6 +13,8 @@ interface Props {
   // When provided, the modal is a setup-slot PICKER: tapping a profile assigns it.
   // When omitted, it's the profile MANAGER (Task 41): tapping a profile edits it.
   onSelect?: (profile: Profile) => void
+  // Profile IDs already assigned to other slots this game — shown but not selectable (Task 46).
+  disabledProfileIds?: string[]
   onClose: () => void
 }
 
@@ -35,10 +37,11 @@ function Avatar({ profile, size = 'md' }: { profile: { name: string; avatar?: st
 // A working draft while creating/editing a profile.
 type Draft = { id: string | null; name: string; avatar?: string }
 
-export function ProfilePickerModal({ onSelect, onClose }: Props) {
+export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Props) {
   const { t } = useTranslation()
   // No onSelect → this is the manager (edit/create/delete), not a slot picker.
   const managing = !onSelect
+  const disabled = new Set(disabledProfileIds)
   const [profiles, setProfiles] = useState<Profile[]>(() => loadProfiles())
   // null = list view; otherwise the form is shown for this draft.
   const [draft, setDraft] = useState<Draft | null>(null)
@@ -196,21 +199,31 @@ export function ProfilePickerModal({ onSelect, onClose }: Props) {
               {profiles.length === 0 ? (
                 <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-8">{t.noProfilesYet}</p>
               ) : (
-                profiles.map((p) => (
-                  /* Rows carry only the entry: tap assigns (picker) or edits (manage). */
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => (onSelect ? onSelect(p) : startEdit(p))}
-                    aria-label={managing ? t.editProfile : t.chooseProfile}
-                    className="flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    <Avatar profile={p} />
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
-                      {p.name}
-                    </span>
-                  </button>
-                ))
+                profiles.map((p) => {
+                  // In picker mode, a profile already used by another slot can't be picked again.
+                  const isDisabled = disabled.has(p.id)
+                  return (
+                    /* Rows carry only the entry: tap assigns (picker) or edits (manage). */
+                    <button
+                      key={p.id}
+                      type="button"
+                      disabled={isDisabled}
+                      onClick={() => (onSelect ? onSelect(p) : startEdit(p))}
+                      aria-label={managing ? t.editProfile : t.chooseProfile}
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-50 dark:disabled:hover:bg-slate-700/50"
+                    >
+                      <Avatar profile={p} />
+                      <span className="flex-1 min-w-0 text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                        {p.name}
+                      </span>
+                      {isDisabled && (
+                        <span className="flex-shrink-0 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                          {t.profileInGame}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })
               )}
             </div>
 

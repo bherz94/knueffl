@@ -142,6 +142,7 @@ const en: Translations = {
   // Manage profiles (Task 41)
   manageProfiles: 'Manage profiles',
   close: 'Close',
+  profileInGame: 'in game',
   deletedProfile: 'Deleted',
   gameBoardUnavailable: 'No scorecard was saved for this game.',
   gameBoardError: 'The scorecard could not be displayed.',

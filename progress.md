@@ -369,3 +369,10 @@ The dev-only debug seeding now creates real, linked profiles instead of throwawa
   - `seedDebugHistory()` now draws each game's 2–6 players from a shuffled subset of the roster; every `GameResult` carries the profile's `profileId`, `name`, and `avatar`, so seeded history links to real, editable/deletable profiles. Deleting a seeded profile via the 👤 manager now demonstrates Task 44's "Deleted" label + leaderboard exclusion. Still dev-only (gated behind `import.meta.env.DEV` at the `HistoryModal` seed-button call site).
 - No new dependencies, no i18n changes; the seed button label is unchanged.
 - Build + lint pass.
+
+## TASK 46 — Allow each profile only once per game (setup screen) ✅
+A profile can no longer be assigned to two player slots in the same game.
+- `src/components/ProfilePickerModal.tsx`: added optional `disabledProfileIds?: string[]` prop and a `disabled` `Set` built from it. In the profile list, rows whose id is disabled render as a `disabled` button (dimmed via `disabled:opacity-40`/`cursor-not-allowed`, hover suppressed) with a muted uppercase `profileInGame` badge on the right; the name span became `flex-1 min-w-0 truncate` to seat the badge. Manager mode (no `onSelect`) passes no ids, so it's unchanged.
+- `src/components/SetupScreen.tsx`: the `<ProfilePickerModal>` now receives `disabledProfileIds` = the `profileId`s of all slots except the one being edited (filtered to slots that actually have a `profileId`). The slot's own profile stays selectable.
+- i18n: added `profileInGame` (types + de + en) — DE „im Spiel", EN „in game".
+- Build passes (`npm run build`).

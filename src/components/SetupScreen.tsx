@@ -274,6 +274,10 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
       {pickerSlot != null && (
         <ProfilePickerModal
           onSelect={(profile) => assignProfile(pickerSlot, profile)}
+          // Profiles already assigned to *other* slots can't be picked twice in one game.
+          disabledProfileIds={players
+            .filter((p, idx) => idx !== pickerSlot && p.profileId)
+            .map((p) => p.profileId!)}
           onClose={() => setPickerSlot(null)}
         />
       )}

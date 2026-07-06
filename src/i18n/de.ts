@@ -139,6 +139,7 @@ const de: Translations = {
   // Manage profiles (Task 41)
   manageProfiles: 'Profile verwalten',
   close: 'Schließen',
+  profileInGame: 'im Spiel',
   deletedProfile: 'Gelöscht',
   gameBoardUnavailable: 'Für dieses Spiel ist kein Spielblatt gespeichert.',
   gameBoardError: 'Das Spielblatt konnte nicht angezeigt werden.',
