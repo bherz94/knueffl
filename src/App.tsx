@@ -7,16 +7,38 @@ import { SetupScreen } from './components/SetupScreen'
 import { GameScreen } from './components/GameScreen'
 import { TopBar } from './components/TopBar'
 import { clearGameState } from './hooks/useGameState'
+import type { PlayerSetup } from './types/profile'
 
 type View = 'setup' | 'game'
 
 const APP_KEY = 'knueffl-app'
 
-function loadAppState(): { view: View; players: string[]; virtualDice: boolean } | null {
+// Normalize a persisted `players` blob into PlayerSetup[]. Older builds saved
+// `string[]`; map those (and any stray shapes) into `{ name }` slots.
+function normalizePlayers(raw: unknown): PlayerSetup[] {
+  if (!Array.isArray(raw)) return []
+  return raw
+    .map((p): PlayerSetup | null => {
+      if (typeof p === 'string') return { name: p }
+      if (p && typeof p === 'object' && typeof (p as PlayerSetup).name === 'string') {
+        const { name, profileId, avatar } = p as PlayerSetup
+        return { name, profileId, avatar }
+      }
+      return null
+    })
+    .filter((p): p is PlayerSetup => p !== null)
+}
+
+function loadAppState(): { view: View; players: PlayerSetup[]; virtualDice: boolean } | null {
   try {
     const raw = localStorage.getItem(APP_KEY)
     if (!raw) return null
-    return JSON.parse(raw)
+    const parsed = JSON.parse(raw)
+    return {
+      view: parsed.view === 'game' ? 'game' : 'setup',
+      players: normalizePlayers(parsed.players),
+      virtualDice: !!parsed.virtualDice,
+    }
   } catch {
     return null
   }
@@ -25,7 +47,7 @@ function loadAppState(): { view: View; players: string[]; virtualDice: boolean }
 function AppInner() {
   const savedApp = loadAppState()
   const [view, setView] = useState<View>(savedApp?.view ?? 'setup')
-  const [players, setPlayers] = useState<string[]>(savedApp?.players ?? [])
+  const [players, setPlayers] = useState<PlayerSetup[]>(savedApp?.players ?? [])
   const [virtualDice, setVirtualDice] = useState<boolean>(savedApp?.virtualDice ?? false)
   // Bumped on New Game to force a fresh GameScreen (and useGameState) mount
   const [gameNonce, setGameNonce] = useState(0)
@@ -36,9 +58,9 @@ function AppInner() {
     } catch {}
   }, [view, players, virtualDice])
 
-  function handleStart(names: string[], vd: boolean) {
+  function handleStart(setups: PlayerSetup[], vd: boolean) {
     clearGameState()
-    setPlayers(names)
+    setPlayers(setups)
     setVirtualDice(vd)
     setView('game')
   }
@@ -64,14 +86,14 @@ function AppInner() {
       {view === 'setup' && (
         <SetupScreen
           onStart={handleStart}
-          initialNames={players.length ? players : undefined}
+          initialPlayers={players.length ? players : undefined}
           initialVirtualDice={virtualDice}
         />
       )}
       {view === 'game' && (
         <GameScreen
           key={gameNonce}
-          playerNames={players}
+          players={players}
           virtualDice={virtualDice}
           onNewGame={handleNewGame}
           onCancel={handleCancel}

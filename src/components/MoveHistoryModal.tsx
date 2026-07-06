@@ -1,15 +1,18 @@
 import type { MoveEntry } from '../types/game'
 import { useTranslation } from '../hooks/useLanguage'
 import { categoryLabel } from '../utils/labels'
+import { PlayerAvatar } from './PlayerAvatar'
 
 interface Props {
   playerName: string
+  playerIndex: number
+  avatar?: string
   moves: MoveEntry[]
   onSelectEntry: (moveId: string) => void
   onClose: () => void
 }
 
-export function MoveHistoryModal({ playerName, moves, onSelectEntry, onClose }: Props) {
+export function MoveHistoryModal({ playerName, playerIndex, avatar, moves, onSelectEntry, onClose }: Props) {
   const { t } = useTranslation()
   // Newest first
   const ordered = [...moves].sort((a, b) => b.timestamp - a.timestamp)
@@ -21,8 +24,9 @@ export function MoveHistoryModal({ playerName, moves, onSelectEntry, onClose }: 
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5 pb-3 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-            {t.moveHistoryFor(playerName)}
+          <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100">
+            <PlayerAvatar name={playerName} index={playerIndex} avatar={avatar} sizeClass="w-7 h-7" />
+            <span className="min-w-0 truncate">{t.moveHistoryFor(playerName)}</span>
           </h2>
           {ordered.length > 0 && (
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t.tapEntryToCorrect}</p>

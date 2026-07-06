@@ -19,6 +19,9 @@ export type PlayerScores = Record<ScorableCategory, CellState>
 export interface Player {
   name: string
   scores: PlayerScores
+  // Optional link to a saved Profile and a cached copy of its avatar data URL.
+  profileId?: string
+  avatar?: string
 }
 
 export interface MoveEntry {

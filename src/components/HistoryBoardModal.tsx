@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from '../hooks/useLanguage'
 import type { Player } from '../types/game'
-import { getGameBoard, type GameRecord } from '../utils/gameHistory'
+import { getGameBoard, resolveAvatar, type GameRecord } from '../utils/gameHistory'
 import { Scoreboard } from './Scoreboard'
 
 interface Props {
@@ -29,7 +29,12 @@ export function HistoryBoardModal({ record, onClose }: Props) {
   const players = useMemo<Player[]>(() => {
     const boards = getGameBoard(record)
     if (!boards) return []
-    return record.results.map((r, i) => ({ name: r.name, scores: boards[i] }))
+    return record.results.map((r, i) => ({
+      name: r.name,
+      scores: boards[i],
+      profileId: r.profileId,
+      avatar: resolveAvatar(r.profileId, r.avatar),
+    }))
   }, [record])
   const placements = useMemo<Record<number, number>>(() => {
     const map: Record<number, number> = {}

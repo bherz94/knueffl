@@ -117,4 +117,19 @@ export interface Translations {
   correctionBanner: (name: string) => string
   correctionHint: string
   cancelCorrection: string
+
+  // Player profiles (Task 37)
+  chooseProfile: string
+  profiles: string
+  newProfile: string
+  editProfile: string
+  deleteProfile: string
+  deleteProfileConfirm: (name: string) => string
+  profileName: string
+  profileNamePlaceholder: string
+  uploadPhoto: string
+  removePhoto: string
+  noProfilesYet: string
+  save: string
+  delete: string
 }

@@ -1,49 +1,58 @@
 import { useState } from 'react'
+import type { PlayerSetup, Profile } from '../types/profile'
 import { useTranslation } from '../hooks/useLanguage'
+import { ProfilePickerModal } from './ProfilePickerModal'
 
 interface Props {
-  onStart: (players: string[], virtualDice: boolean) => void
-  initialNames?: string[]
+  onStart: (players: PlayerSetup[], virtualDice: boolean) => void
+  initialPlayers?: PlayerSetup[]
   initialVirtualDice?: boolean
 }
 
 const MIN_PLAYERS = 2
 const MAX_PLAYERS = 6
 
-export function SetupScreen({ onStart, initialNames, initialVirtualDice }: Props) {
+const emptySlot = (): PlayerSetup => ({ name: '' })
+
+export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Props) {
   const { t } = useTranslation()
-  const [count, setCount] = useState(initialNames?.length ?? 2)
-  const [names, setNames] = useState<string[]>(initialNames ?? ['', ''])
+  const [count, setCount] = useState(initialPlayers?.length ?? 2)
+  const [players, setPlayers] = useState<PlayerSetup[]>(
+    initialPlayers && initialPlayers.length > 0 ? initialPlayers : [emptySlot(), emptySlot()],
+  )
   const [virtualDice, setVirtualDice] = useState(initialVirtualDice ?? false)
+  // Slot index whose profile picker is open, or null.
+  const [pickerSlot, setPickerSlot] = useState<number | null>(null)
 
   function setPlayerCount(n: number) {
     const clamped = Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, n))
     setCount(clamped)
-    setNames((prev) => {
+    setPlayers((prev) => {
       const next = [...prev]
-      while (next.length < clamped) next.push('')
+      while (next.length < clamped) next.push(emptySlot())
       return next.slice(0, clamped)
     })
   }
 
-  function setName(i: number, value: string) {
-    setNames((prev) => prev.map((n, idx) => (idx === i ? value.slice(0, 20) : n)))
+  function assignProfile(i: number, profile: Profile) {
+    setPlayers((prev) =>
+      prev.map((p, idx) => (idx === i ? { name: profile.name, profileId: profile.id, avatar: profile.avatar } : p)),
+    )
+    setPickerSlot(null)
   }
 
-  const allFilled = names.every((n) => n.trim().length > 0)
+  function clearSlot(i: number) {
+    setPlayers((prev) => prev.map((p, idx) => (idx === i ? emptySlot() : p)))
+  }
+
+  const allFilled = players.every((p) => p.name.trim().length > 0)
 
   function handleStart() {
     if (!allFilled) return
-    onStart(names.map((n) => n.trim()), virtualDice)
-  }
-
-  // Task 20: Enter in any name field starts the game when all names are filled;
-  // otherwise it's a no-op (avoids surprising focus jumps).
-  function handleNameKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      if (allFilled) handleStart()
-    }
+    onStart(
+      players.map((p) => ({ ...p, name: p.name.trim() })),
+      virtualDice,
+    )
   }
 
   return (
@@ -107,29 +116,66 @@ export function SetupScreen({ onStart, initialNames, initialVirtualDice }: Props
             </div>
           </div>
 
-          {/* Player name inputs — single column, always */}
+          {/* Player slots — tap to choose a profile */}
           <div>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
               {t.playerName}
             </p>
             <div className="flex flex-col gap-2">
-              {names.map((name, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="w-7 h-7 flex-shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center">
-                    {i + 1}
-                  </span>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(i, e.target.value)}
-                    onKeyDown={handleNameKeyDown}
-                    autoFocus={i === 0}
-                    placeholder={t.playerNamePlaceholder(i + 1)}
-                    maxLength={20}
-                    className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition"
-                  />
-                </div>
-              ))}
+              {players.map((player, i) => {
+                const filled = player.name.trim().length > 0
+                return (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="w-7 h-7 flex-shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setPickerSlot(i)}
+                      className={[
+                        'flex-1 min-w-0 flex items-center gap-3 px-3 py-2 rounded-lg border text-sm transition',
+                        filled
+                          ? 'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50'
+                          : 'border-dashed border-slate-300 dark:border-slate-600 bg-transparent',
+                      ].join(' ')}
+                    >
+                      {filled ? (
+                        <>
+                          {player.avatar ? (
+                            <img src={player.avatar} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                          ) : (
+                            <span className="w-8 h-8 rounded-full bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 uppercase">
+                              {player.name.trim().slice(0, 2)}
+                            </span>
+                          )}
+                          <span className="flex-1 min-w-0 truncate text-left font-semibold text-slate-900 dark:text-slate-100">
+                            {player.name}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-8 h-8 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-500 text-slate-400 dark:text-slate-500 flex items-center justify-center flex-shrink-0">
+                            +
+                          </span>
+                          <span className="flex-1 min-w-0 text-left text-slate-400 dark:text-slate-500">
+                            {t.chooseProfile}
+                          </span>
+                        </>
+                      )}
+                    </button>
+                    {filled && (
+                      <button
+                        type="button"
+                        onClick={() => clearSlot(i)}
+                        aria-label={t.removePlayer}
+                        className="w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
 
@@ -157,6 +203,13 @@ export function SetupScreen({ onStart, initialNames, initialVirtualDice }: Props
           </button>
         </div>
       </div>
+
+      {pickerSlot != null && (
+        <ProfilePickerModal
+          onSelect={(profile) => assignProfile(pickerSlot, profile)}
+          onClose={() => setPickerSlot(null)}
+        />
+      )}
     </div>
   )
 }

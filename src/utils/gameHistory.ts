@@ -7,6 +7,8 @@
 
 import type { PlayerScores, ScorableCategory } from '../types/game'
 import { ALL_SCORABLE, makeEmptyScores } from '../types/game'
+import type { Profile } from '../types/profile'
+import { getProfile } from './profiles'
 import { calcGrandTotal } from './scoring'
 
 export interface GameResult {
@@ -18,6 +20,9 @@ export interface GameResult {
   // here only as the transport into `recordGame`, and on legacy records written
   // before Task 33 (which are still read as a fallback).
   scores?: PlayerScores
+  // Optional link to a saved Profile and a cached copy of its avatar data URL.
+  profileId?: string
+  avatar?: string
 }
 
 export interface GameRecord {
@@ -134,8 +139,10 @@ export function clearHistory() {
 }
 
 export interface PlayerStats {
-  key: string // lowercased name, the identity across games
+  key: string // the identity across games: profileId when present, else lowercased name
+  profileId?: string // set when this player was linked to a saved profile
   name: string // display name, using the most recent casing seen
+  avatar?: string // most recent avatar cached on a record (fallback; see resolveAvatar)
   gamesPlayed: number
   wins: number // number of 1st-place finishes
   bestGame: number // highest single-game total
@@ -143,7 +150,11 @@ export interface PlayerStats {
   avgScore: number // mean grand total across their games, rounded
 }
 
-// Aggregate players across all games, matching identity case-insensitively.
+// Aggregate players across all games. Identity is keyed by `profileId` when a
+// result carries one (so a renamed profile still aggregates), otherwise it falls
+// back to the lowercased, trimmed name — preserving behavior for legacy /
+// profile-less records. Old name-keyed and new profile-keyed records for the same
+// real person are intentionally NOT merged.
 export function aggregateStats(records: GameRecord[]): PlayerStats[] {
   const byKey = new Map<string, PlayerStats & { totalPoints: number; lastSeen: number }>()
 
@@ -152,11 +163,13 @@ export function aggregateStats(records: GameRecord[]): PlayerStats[] {
 
   for (const record of chronological) {
     for (const r of record.results) {
-      const key = r.name.trim().toLowerCase()
+      const key = r.profileId ?? r.name.trim().toLowerCase()
       if (!key) continue
       const stats = byKey.get(key) ?? {
         key,
+        profileId: r.profileId,
         name: r.name,
+        avatar: undefined,
         gamesPlayed: 0,
         wins: 0,
         bestGame: 0,
@@ -166,6 +179,8 @@ export function aggregateStats(records: GameRecord[]): PlayerStats[] {
         lastSeen: 0,
       }
       stats.name = r.name // most recent casing (chronological order)
+      if (r.profileId) stats.profileId = r.profileId
+      if (r.avatar) stats.avatar = r.avatar // keep the most recent cached avatar
       stats.gamesPlayed += 1
       stats.totalPoints += r.total
       if (r.place === 1) stats.wins += 1
@@ -183,6 +198,23 @@ export function aggregateStats(records: GameRecord[]): PlayerStats[] {
     ...s,
     avgScore: s.gamesPlayed > 0 ? Math.round(totalPoints / s.gamesPlayed) : 0,
   }))
+}
+
+// Pick the avatar to display for a history entry: prefer the linked profile's
+// CURRENT avatar (so renamed / re-photographed profiles show their latest
+// picture), then any avatar cached on the record/result, else undefined so the
+// colored-initial fallback in <PlayerAvatar> kicks in. Pass a preloaded profiles
+// map when resolving many rows to avoid re-reading localStorage per call.
+export function resolveAvatar(
+  profileId: string | undefined,
+  fallbackAvatar: string | undefined,
+  profiles?: Map<string, Profile>,
+): string | undefined {
+  if (profileId) {
+    const profile = profiles ? profiles.get(profileId) : getProfile(profileId)
+    if (profile?.avatar) return profile.avatar
+  }
+  return fallbackAvatar
 }
 
 export type LeaderboardMetric = 'bestGame' | 'wins' | 'avgScore'

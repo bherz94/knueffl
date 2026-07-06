@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import type { CategoryMeta, ScorableCategory } from '../types/game'
+import type { PlayerSetup } from '../types/profile'
 import { useGameState } from '../hooks/useGameState'
 import type { MoveSlot } from '../hooks/useGameState'
 import { useTranslation } from '../hooks/useLanguage'
@@ -12,9 +13,10 @@ import { FreeInputPopup } from './FreeInputPopup'
 import { GameEndOverlay } from './GameEndOverlay'
 import { DiceModal } from './DiceModal'
 import { MoveHistoryModal } from './MoveHistoryModal'
+import { PlayerAvatar } from './PlayerAvatar'
 
 interface Props {
-  playerNames: string[]
+  players: PlayerSetup[]
   virtualDice: boolean
   onNewGame: () => void
   onCancel: () => void
@@ -47,9 +49,9 @@ function calcPlacements(players: { name: string; scores: Parameters<typeof calcG
   return result
 }
 
-export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Props) {
+export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props) {
   const { t } = useTranslation()
-  const { state, score, cross, correctScore, correctCross, removeMove, revertCorrection, undo, setDice, canUndo } = useGameState(playerNames)
+  const { state, score, cross, correctScore, correctCross, removeMove, revertCorrection, undo, setDice, canUndo } = useGameState(players)
   const [popup, setPopup] = useState<ActivePopup>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [overlayOpen, setOverlayOpen] = useState(state.isGameOver)
@@ -87,7 +89,7 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
         finishedAt: Date.now(),
         virtualDice,
         results: state.players
-          .map((p, i) => ({ name: p.name, total: calcGrandTotal(p.scores), place: placement[i], scores: p.scores }))
+          .map((p, i) => ({ name: p.name, total: calcGrandTotal(p.scores), place: placement[i], scores: p.scores, profileId: p.profileId, avatar: p.avatar }))
           .sort((a, b) => a.place - b.place),
       })
     } else {
@@ -231,11 +233,33 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
                 onClick={() => setDiceModalOpen(true)}
                 className="flex items-center gap-2 text-sm font-semibold hover:opacity-80 transition-opacity"
               >
-                🎲 {currentPlayer.name}
+                🎲
+                {currentPlayer.avatar && (
+                  <PlayerAvatar
+                    name={currentPlayer.name}
+                    index={state.currentPlayerIndex}
+                    avatar={currentPlayer.avatar}
+                    sizeClass="w-6 h-6"
+                    textClass="text-[10px]"
+                    className="ring-1 ring-white/40"
+                  />
+                )}
+                {currentPlayer.name}
               </button>
             ) : (
-              <span className="text-sm font-semibold text-center">
-                🎲 {t.currentTurn(currentPlayer.name)}
+              <span className="inline-flex items-center gap-2 text-sm font-semibold text-center">
+                🎲
+                {currentPlayer.avatar && (
+                  <PlayerAvatar
+                    name={currentPlayer.name}
+                    index={state.currentPlayerIndex}
+                    avatar={currentPlayer.avatar}
+                    sizeClass="w-6 h-6"
+                    textClass="text-[10px]"
+                    className="ring-1 ring-white/40"
+                  />
+                )}
+                {t.currentTurn(currentPlayer.name)}
                 <span className="ml-2 text-indigo-200 text-xs hidden sm:inline">{t.crossOutHint}</span>
               </span>
             )}
@@ -335,6 +359,8 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
       {historyPlayer != null && (
         <MoveHistoryModal
           playerName={state.players[historyPlayer]?.name ?? ''}
+          playerIndex={historyPlayer}
+          avatar={state.players[historyPlayer]?.avatar}
           moves={state.moveLog.filter((m) => m.playerIndex === historyPlayer)}
           onSelectEntry={handleHistorySelect}
           onClose={() => setHistoryPlayer(null)}

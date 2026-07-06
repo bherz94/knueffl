@@ -1,21 +1,14 @@
 import type { Player } from '../types/game'
 import { calcGrandTotal } from '../utils/scoring'
+import { resolveAvatar } from '../utils/gameHistory'
 import { useTranslation } from '../hooks/useLanguage'
+import { PlayerAvatar } from './PlayerAvatar'
 
 interface Props {
   players: Player[]
   onNewGame: () => void
   onClose: () => void
 }
-
-const PLAYER_COLORS = [
-  'bg-indigo-500',
-  'bg-rose-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-sky-500',
-  'bg-purple-500',
-]
 
 export function GameEndOverlay({ players, onNewGame, onClose }: Props) {
   const { t } = useTranslation()
@@ -55,7 +48,6 @@ export function GameEndOverlay({ players, onNewGame, onClose }: Props) {
         <div className="space-y-2 mb-6">
           {withPlace.map(({ player, total, originalIndex, place }) => {
             const isFirst = place === 1
-            const color = PLAYER_COLORS[originalIndex % PLAYER_COLORS.length]
             return (
               <div
                 key={player.name}
@@ -72,9 +64,13 @@ export function GameEndOverlay({ players, onNewGame, onClose }: Props) {
                 ].join(' ')}>
                   {t.place(place)}
                 </span>
-                <div className={`w-8 h-8 rounded-full ${color} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
-                  {player.name.charAt(0).toUpperCase()}
-                </div>
+                <PlayerAvatar
+                  name={player.name}
+                  index={originalIndex}
+                  avatar={resolveAvatar(player.profileId, player.avatar)}
+                  sizeClass="w-8 h-8"
+                  textClass="text-xs"
+                />
                 <span className={[
                   'flex-1 font-semibold text-sm',
                   isFirst ? 'text-amber-900 dark:text-amber-100' : 'text-slate-700 dark:text-slate-300',

@@ -119,6 +119,21 @@ const de: Translations = {
   correctionBanner: (name) => `Korrektur für ${name}`,
   correctionHint: 'Tippe eine leere Zelle an, um den korrekten Wert einzugeben',
   cancelCorrection: 'Korrektur abbrechen',
+
+  // Player profiles (Task 37)
+  chooseProfile: 'Profil wählen',
+  profiles: 'Profile',
+  newProfile: 'Neues Profil',
+  editProfile: 'Profil bearbeiten',
+  deleteProfile: 'Profil löschen',
+  deleteProfileConfirm: (name) => `Profil „${name}" wirklich löschen?`,
+  profileName: 'Name',
+  profileNamePlaceholder: 'Name eingeben',
+  uploadPhoto: 'Foto hochladen',
+  removePhoto: 'Foto entfernen',
+  noProfilesYet: 'Noch keine Profile. Erstelle ein neues.',
+  save: 'Speichern',
+  delete: 'Löschen',
 }
 
 export default de

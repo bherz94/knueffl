@@ -1,23 +1,16 @@
+import { PlayerAvatar } from './PlayerAvatar'
+
 interface Props {
   name: string
   isActive: boolean
   index: number
   place?: number
+  avatar?: string
 }
-
-const PLAYER_COLORS = [
-  'bg-indigo-500',
-  'bg-rose-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-sky-500',
-  'bg-purple-500',
-]
 
 const PLACE_MEDALS = ['🥇', '🥈', '🥉']
 
-export function PlayerHeader({ name, isActive, index, place }: Props) {
-  const color = PLAYER_COLORS[index % PLAYER_COLORS.length]
+export function PlayerHeader({ name, isActive, index, place, avatar }: Props) {
   return (
     <div
       className={[
@@ -26,9 +19,7 @@ export function PlayerHeader({ name, isActive, index, place }: Props) {
       ].join(' ')}
     >
       <div className="relative">
-        <div className={`w-8 h-8 rounded-full ${color} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
-          {name.charAt(0).toUpperCase()}
-        </div>
+        <PlayerAvatar name={name} index={index} avatar={avatar} />
         {place !== undefined && (
           <div className={[
             'absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center leading-none',

@@ -7,10 +7,13 @@ import {
   clearHistory,
   seedDebugHistory,
   recordHasBoard,
+  resolveAvatar,
   type GameRecord,
   type LeaderboardMetric,
 } from '../utils/gameHistory'
+import { loadProfiles } from '../utils/profiles'
 import { HistoryBoardModal } from './HistoryBoardModal'
+import { PlayerAvatar } from './PlayerAvatar'
 
 interface Props {
   onClose: () => void
@@ -30,11 +33,12 @@ const PLAYER_COLORS = [
   'bg-purple-500',
 ]
 
-// Stable color per name so a player looks the same across cards.
-function colorForName(name: string): string {
+// Stable color index per name so a player's fallback disc looks the same across
+// cards. Matches the palette order used by <PlayerAvatar>.
+function colorIndexForName(name: string): number {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0
-  return PLAYER_COLORS[Math.abs(hash) % PLAYER_COLORS.length]
+  return Math.abs(hash) % PLAYER_COLORS.length
 }
 
 export function HistoryModal({ onClose }: Props) {
@@ -47,6 +51,8 @@ export function HistoryModal({ onClose }: Props) {
   // Snapshot once on open; a manual clear bumps this to re-read.
   const [nonce, setNonce] = useState(0)
   const records = useMemo<GameRecord[]>(() => loadHistory(), [nonce])
+  // Preloaded once so avatar resolution across many rows never re-reads storage.
+  const profilesMap = useMemo(() => new Map(loadProfiles().map((p) => [p.id, p])), [nonce])
   // How many game cards are currently rendered (Task 30). Reset on re-read.
   const [visibleCount, setVisibleCount] = useState(GAMES_PAGE)
   useEffect(() => setVisibleCount(GAMES_PAGE), [nonce])
@@ -181,9 +187,13 @@ export function HistoryModal({ onClose }: Props) {
                         ].join(' ')}>
                           {t.place(r.place)}
                         </span>
-                        <div className={`w-6 h-6 rounded-full ${colorForName(r.name)} flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0`}>
-                          {r.name.charAt(0).toUpperCase()}
-                        </div>
+                        <PlayerAvatar
+                          name={r.name}
+                          index={colorIndexForName(r.name)}
+                          avatar={resolveAvatar(r.profileId, r.avatar, profilesMap)}
+                          sizeClass="w-6 h-6"
+                          textClass="text-[10px]"
+                        />
                         <span className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
                           {r.name}{isFirst && ' 👑'}
                         </span>
@@ -264,9 +274,13 @@ export function HistoryModal({ onClose }: Props) {
                       ].join(' ')}>
                         {rank}
                       </span>
-                      <div className={`w-8 h-8 rounded-full ${colorForName(s.name)} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
-                        {s.name.charAt(0).toUpperCase()}
-                      </div>
+                      <PlayerAvatar
+                        name={s.name}
+                        index={colorIndexForName(s.name)}
+                        avatar={resolveAvatar(s.profileId, s.avatar, profilesMap)}
+                        sizeClass="w-8 h-8"
+                        textClass="text-xs"
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{s.name}</div>
                         <div className="text-xs text-slate-400 dark:text-slate-500">{t.gamesPlayedCount(s.gamesPlayed)}</div>

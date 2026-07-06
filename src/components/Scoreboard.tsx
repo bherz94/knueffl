@@ -175,6 +175,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
                       isActive={i === activeIndex}
                       index={i}
                       place={placements?.[i]}
+                      avatar={player.avatar}
                     />
                   </button>
                 ) : (
@@ -183,6 +184,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
                     isActive={i === activeIndex}
                     index={i}
                     place={placements?.[i]}
+                    avatar={player.avatar}
                   />
                 )}
               </th>

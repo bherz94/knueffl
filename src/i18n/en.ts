@@ -122,6 +122,21 @@ const en: Translations = {
   correctionBanner: (name: string) => `Correcting ${name}`,
   correctionHint: 'Tap an empty cell to enter the correct value',
   cancelCorrection: 'Cancel correction',
+
+  // Player profiles (Task 37)
+  chooseProfile: 'Choose profile',
+  profiles: 'Profiles',
+  newProfile: 'New profile',
+  editProfile: 'Edit profile',
+  deleteProfile: 'Delete profile',
+  deleteProfileConfirm: (name: string) => `Delete profile "${name}"?`,
+  profileName: 'Name',
+  profileNamePlaceholder: 'Enter name',
+  uploadPhoto: 'Upload photo',
+  removePhoto: 'Remove photo',
+  noProfilesYet: 'No profiles yet. Create one.',
+  save: 'Save',
+  delete: 'Delete',
 }
 
 export default en

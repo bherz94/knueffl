@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { Player, ScorableCategory, MoveEntry, CellState } from '../types/game'
+import type { PlayerSetup } from '../types/profile'
 import { makeEmptyScores } from '../types/game'
 import { isPlayerDone } from '../utils/scoring'
 
@@ -48,10 +49,15 @@ export function clearGameState() {
   try { localStorage.removeItem(GAME_KEY) } catch {}
 }
 
-function makeInitial(playerNames: string[]): GameState {
+function makeInitial(players: PlayerSetup[]): GameState {
   return {
     gameId: makeMoveId(),
-    players: playerNames.map((name) => ({ name, scores: makeEmptyScores() })),
+    players: players.map((p) => ({
+      name: p.name,
+      scores: makeEmptyScores(),
+      profileId: p.profileId,
+      avatar: p.avatar,
+    })),
     currentPlayerIndex: 0,
     isGameOver: false,
     diceValues: null,
@@ -59,14 +65,20 @@ function makeInitial(playerNames: string[]): GameState {
   }
 }
 
-export function useGameState(playerNames: string[]) {
+// The saved game rehydrates only if it's the same lineup: same length and, for
+// every slot, the same name AND the same profileId.
+function playersMatch(saved: Player[], players: PlayerSetup[]): boolean {
+  return (
+    saved.length === players.length &&
+    saved.every((p, i) => p.name === players[i].name && p.profileId === players[i].profileId)
+  )
+}
+
+export function useGameState(players: PlayerSetup[]) {
   const [history, setHistory] = useState<GameState[]>(() => {
     const saved = loadGameState()
     if (!saved) return []
-    const match =
-      saved.state.players.length === playerNames.length &&
-      saved.state.players.every((p, i) => p.name === playerNames[i])
-    return match ? saved.history : []
+    return playersMatch(saved.state.players, players) ? saved.history : []
   })
 
   // Snapshot taken when a correction starts (the pre-removeMove state), used only
@@ -78,12 +90,9 @@ export function useGameState(playerNames: string[]) {
 
   const [state, setState] = useState<GameState>(() => {
     const saved = loadGameState()
-    const initial = makeInitial(playerNames)
+    const initial = makeInitial(players)
     if (!saved) return initial
-    const match =
-      saved.state.players.length === playerNames.length &&
-      saved.state.players.every((p, i) => p.name === playerNames[i])
-    if (!match) return initial
+    if (!playersMatch(saved.state.players, players)) return initial
     // Normalize saves that predate diceValues / moveLog / gameId fields
     return {
       ...saved.state,
@@ -227,9 +236,9 @@ export function useGameState(playerNames: string[]) {
     setState((prev) => ({ ...prev, diceValues: values }))
   }
 
-  function reset(names: string[]) {
+  function reset(nextPlayers: PlayerSetup[]) {
     setHistory([])
-    setState(makeInitial(names))
+    setState(makeInitial(nextPlayers))
   }
 
   return { state, score, cross, correctScore, correctCross, removeMove, revertCorrection, undo, setDice, reset, canUndo: history.length > 0 }
