@@ -84,6 +84,7 @@ export function ProfilePickerModal({ onSelect, onClose }: Props) {
     removeProfile(p.id)
     setProfiles(loadProfiles())
     setConfirmDelete(null)
+    setDraft(null) // back to the refreshed list
   }
 
   return (
@@ -98,10 +99,24 @@ export function ProfilePickerModal({ onSelect, onClose }: Props) {
         {draft ? (
           /* ---- Create / edit form ---- */
           <>
-            <div className="p-5 pb-3 border-b border-slate-200 dark:border-slate-700">
+            <div className="p-5 pb-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
               <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 {draft.id ? t.editProfile : t.newProfile}
               </h2>
+              {/* Delete only when editing an existing profile; returns to the list after. */}
+              {draft.id && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const p = profiles.find((x) => x.id === draft.id)
+                    if (p) setConfirmDelete(p)
+                  }}
+                  aria-label={t.deleteProfile}
+                  className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                >
+                  🗑️
+                </button>
+              )}
             </div>
 
             <div className="overflow-y-auto p-5 flex flex-col gap-4">
@@ -182,41 +197,19 @@ export function ProfilePickerModal({ onSelect, onClose }: Props) {
                 <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-8">{t.noProfilesYet}</p>
               ) : (
                 profiles.map((p) => (
-                  <div
+                  /* Rows carry only the entry: tap assigns (picker) or edits (manage). */
+                  <button
                     key={p.id}
-                    className="flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                    type="button"
+                    onClick={() => (onSelect ? onSelect(p) : startEdit(p))}
+                    aria-label={managing ? t.editProfile : t.chooseProfile}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   >
-                    <button
-                      type="button"
-                      onClick={() => (onSelect ? onSelect(p) : startEdit(p))}
-                      aria-label={managing ? t.editProfile : undefined}
-                      className="flex items-center gap-3 flex-1 min-w-0 text-left"
-                    >
-                      <Avatar profile={p} />
-                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
-                        {p.name}
-                      </span>
-                    </button>
-                    {/* Explicit edit affordance only in picker mode; in manage mode the row tap edits. */}
-                    {!managing && (
-                      <button
-                        type="button"
-                        onClick={() => startEdit(p)}
-                        aria-label={t.editProfile}
-                        className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                      >
-                        ✏️
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setConfirmDelete(p)}
-                      aria-label={t.deleteProfile}
-                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                    >
-                      🗑️
-                    </button>
-                  </div>
+                    <Avatar profile={p} />
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                      {p.name}
+                    </span>
+                  </button>
                 ))
               )}
             </div>

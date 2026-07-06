@@ -8,6 +8,7 @@ import {
   seedDebugHistory,
   recordHasBoard,
   resolveAvatar,
+  isProfileDeleted,
   type GameRecord,
   type LeaderboardMetric,
 } from '../utils/gameHistory'
@@ -53,6 +54,8 @@ export function HistoryModal({ onClose }: Props) {
   const records = useMemo<GameRecord[]>(() => loadHistory(), [nonce])
   // Preloaded once so avatar resolution across many rows never re-reads storage.
   const profilesMap = useMemo(() => new Map(loadProfiles().map((p) => [p.id, p])), [nonce])
+  // Ids of profiles that still exist — for flagging deleted-profile results (Task 44).
+  const existingIds = useMemo(() => new Set(profilesMap.keys()), [profilesMap])
   // How many game cards are currently rendered (Task 30). Reset on re-read.
   const [visibleCount, setVisibleCount] = useState(GAMES_PAGE)
   useEffect(() => setVisibleCount(GAMES_PAGE), [nonce])
@@ -173,6 +176,9 @@ export function HistoryModal({ onClose }: Props) {
                 <div className="flex flex-col gap-1">
                   {g.results.map((r, i) => {
                     const isFirst = r.place === 1
+                    // A deleted profile renders as the "Deleted" label with the colored-initial fallback.
+                    const deleted = isProfileDeleted(r.profileId, existingIds)
+                    const displayName = deleted ? t.deletedProfile : r.name
                     return (
                       <div
                         key={`${r.name}-${i}`}
@@ -188,14 +194,17 @@ export function HistoryModal({ onClose }: Props) {
                           {t.place(r.place)}
                         </span>
                         <PlayerAvatar
-                          name={r.name}
-                          index={colorIndexForName(r.name)}
-                          avatar={resolveAvatar(r.profileId, r.avatar, profilesMap)}
+                          name={displayName}
+                          index={colorIndexForName(displayName)}
+                          avatar={deleted ? undefined : resolveAvatar(r.profileId, r.avatar, profilesMap)}
                           sizeClass="w-6 h-6"
                           textClass="text-[10px]"
                         />
-                        <span className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
-                          {r.name}{isFirst && ' 👑'}
+                        <span className={[
+                          'flex-1 text-sm font-medium truncate',
+                          deleted ? 'italic text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200',
+                        ].join(' ')}>
+                          {displayName}{isFirst && ' 👑'}
                         </span>
                         <span className="text-sm font-bold tabular-nums text-slate-600 dark:text-slate-300">
                           {t.points(r.total)}

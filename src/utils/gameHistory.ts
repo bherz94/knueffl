@@ -8,7 +8,7 @@
 import type { PlayerScores, ScorableCategory } from '../types/game'
 import { ALL_SCORABLE, makeEmptyScores } from '../types/game'
 import type { Profile } from '../types/profile'
-import { getProfile } from './profiles'
+import { getProfile, loadProfiles, upsertProfile } from './profiles'
 import { calcGrandTotal } from './scoring'
 
 export interface GameResult {
@@ -150,6 +150,21 @@ export interface PlayerStats {
   avgScore: number // mean grand total across their games, rounded
 }
 
+// Set of profile ids that currently exist, for detecting results whose linked
+// profile was later deleted (Task 44). Preload once and pass into isProfileDeleted
+// to avoid re-reading localStorage per row.
+export function existingProfileIds(): Set<string> {
+  return new Set(loadProfiles().map((p) => p.id))
+}
+
+// A result's linked profile counts as deleted when it carries a `profileId` that
+// no longer resolves to a saved profile. Profile-less / legacy results (no
+// `profileId`) are never "deleted".
+export function isProfileDeleted(profileId: string | undefined, ids?: Set<string>): boolean {
+  if (!profileId) return false
+  return !(ids ?? existingProfileIds()).has(profileId)
+}
+
 // Aggregate players across all games. Identity is keyed by `profileId` when a
 // result carries one (so a renamed profile still aggregates), otherwise it falls
 // back to the lowercased, trimmed name — preserving behavior for legacy /
@@ -160,9 +175,12 @@ export function aggregateStats(records: GameRecord[]): PlayerStats[] {
 
   // Oldest first so the newest game wins the display-name casing.
   const chronological = [...records].sort((a, b) => a.finishedAt - b.finishedAt)
+  // Deleted-profile results are dropped from the leaderboards entirely (Task 44).
+  const existing = existingProfileIds()
 
   for (const record of chronological) {
     for (const r of record.results) {
+      if (isProfileDeleted(r.profileId, existing)) continue
       const key = r.profileId ?? r.name.trim().toLowerCase()
       if (!key) continue
       const stats = byKey.get(key) ?? {
@@ -270,26 +288,54 @@ function randomScores(): PlayerScores {
   return scores
 }
 
+// A fixed roster of predefined debug profiles, linked to the seeded games so the
+// profile-driven history / leaderboard / deleted-profile behavior can be
+// exercised without hand-creating accounts. Stable ids keep re-seeding from
+// duplicating them. Dev-only.
+const DEBUG_PROFILES: { id: string; name: string }[] = [
+  { id: 'debug-anna', name: 'Anna' },
+  { id: 'debug-ben', name: 'Ben' },
+  { id: 'debug-clara', name: 'Clara' },
+  { id: 'debug-david', name: 'David' },
+  { id: 'debug-emma', name: 'Emma' },
+  { id: 'debug-felix', name: 'Felix' },
+]
+
+// Ensure every debug profile exists (upsert by stable id — idempotent across
+// repeated seeding), returning the current roster.
+function ensureDebugProfiles(): Profile[] {
+  return DEBUG_PROFILES.map(({ id, name }) => {
+    const existing = getProfile(id)
+    if (existing) return existing
+    const profile: Profile = { id, name, createdAt: Date.now() }
+    upsertProfile(profile)
+    return profile
+  })
+}
+
 // Seed 10 games into history, spread over the past ~10 days. Each game gets a
-// random 2–6 players ("Player 1" … "Player N"). Appends to any existing
-// records. Intended for dev use only.
+// random 2–6 players drawn from the predefined debug profiles (so results link
+// to real, editable/deletable profiles). Appends to any existing records.
+// Intended for dev use only.
 export function seedDebugHistory() {
   const now = Date.now()
   const day = 24 * 60 * 60 * 1000
+  const roster = ensureDebugProfiles()
   const seeded: GameRecord[] = []
 
   for (let g = 0; g < 10; g++) {
-    const names = Array.from({ length: randInt(2, 6) }, (_, i) => `Player ${i + 1}`)
-    const totals = names.map((name) => {
+    // Random distinct subset of 2–6 profiles from the roster.
+    const players = [...roster].sort(() => Math.random() - 0.5).slice(0, randInt(2, 6))
+    const totals = players.map((profile) => {
       const scores = randomScores()
-      return { name, scores, total: calcGrandTotal(scores) }
+      return { profile, scores, total: calcGrandTotal(scores) }
     })
     const ranked = [...totals].sort((a, b) => b.total - a.total)
     let place = 1
     const id = makeId()
     const results: GameResult[] = ranked.map((r, i) => {
       if (i > 0 && r.total < ranked[i - 1].total) place = i + 1
-      return { name: r.name, total: r.total, place }
+      return { name: r.profile.name, total: r.total, place, profileId: r.profile.id, avatar: r.profile.avatar }
     })
     // Store scorecards under the per-game key, keeping the list record light.
     saveGameBoard(id, ranked.map((r) => r.scores))

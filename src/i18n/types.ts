@@ -137,4 +137,6 @@ export interface Translations {
   // Manage profiles (Task 41)
   manageProfiles: string
   close: string
+  // Label shown in game history when a linked profile was deleted (Task 44)
+  deletedProfile: string
 }

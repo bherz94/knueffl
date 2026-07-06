@@ -446,3 +446,29 @@ Replace the single "📷 Upload photo" control in the profile create/edit form w
 Both feed the **existing** `handleFile` → `processAvatarFile` pipeline (center-crop → compressed data-URL → live preview → linked on save); no change to storage, cropping, or the remove-photo affordance. No `getUserMedia`/in-app live-camera UI — this stays a native-picker feature so it works offline in the PWA with no camera-permission plumbing.
 
 **i18n:** retire the now-unused `uploadPhoto` string; add `takePhoto` and `choosePhoto` across `types.ts` + `de.ts` + `en.ts`.
+
+## TASK 43 — Cleaner profile rows; move delete into the edit modal
+
+Declutter the profile list in `ProfilePickerModal` and relocate deletion.
+
+- **Rows show only the entry** (avatar + name) — remove the per-row ✏️ (edit) and 🗑️ (delete) buttons in **both** modes.
+- **Tap behavior unchanged per mode:** manage mode (no `onSelect`, from the 👤 TopBar button) → tapping a row opens that profile's editor; picker mode (setup-slot, `onSelect` present) → tapping a row still **assigns** the profile to the slot. (Editing/deleting is a management action, done via the 👤 popup, not the setup picker.)
+- **Delete lives in the edit modal:** add a 🗑️ button in the **top-right of the create/edit form header**, shown **only when editing an existing profile** (`draft.id` set), not when creating a new one. Tapping it opens the existing delete-confirm overlay; confirming deletes via `removeProfile` and returns to the **refreshed** list (`setDraft(null)`, reload profiles). The existing `confirmDelete` overlay + `doDelete` are reused.
+- No new i18n strings required (reuse `deleteProfile`, `deleteProfileConfirm`, `delete`, `cancel`). Live-propagation (Task 41) is unchanged.
+
+## TASK 44 — Deleted profiles: show "deleted" in game history, drop from leaderboards
+
+When a profile is deleted, past games must still render but its identity is shown as removed, and it must no longer appear in the high-score leaderboards.
+
+- **i18n:** add `deletedProfile` — DE `„Gelöscht"`, EN `"Deleted"` (types + de + en).
+- **Detection helper** in `src/utils/gameHistory.ts`: a result's profile counts as deleted when it carries a `profileId` for which no `Profile` currently exists. Add a helper (e.g. `existingProfileIds(): Set<string>` and/or `isProfileDeleted(profileId, ids?)`) that callers can use; preload the id set once per render to avoid per-row `localStorage` reads. Legacy/profile-less results (no `profileId`) are never "deleted".
+- **Game-history detail views** (`HistoryModal` per-game result rows and `HistoryBoardModal`): where a result's profile was deleted, display the `deletedProfile` label instead of the cached `name`, and render the colored-initial fallback avatar (do **not** show a stale cached photo for a deleted profile).
+- **Leaderboards** (`aggregateStats` / `rankBy`, the 🏆 stats view): exclude results whose linked profile was deleted, so a deleted profile no longer shows up in any leaderboard and its games stop contributing to its own aggregate. Records without a `profileId` are unaffected.
+
+## TASK 45 — Dev seeding: predefined profiles linked to the seeded game scores
+
+Make the dev-only debug seeding produce **real profiles** linked to the fabricated games, so the profile-linked history/leaderboard/deleted-profile behavior can be exercised without hand-creating accounts.
+
+- In `seedDebugHistory` (dev-only, `src/utils/gameHistory.ts`): first ensure a small fixed roster of predefined profiles exists (e.g. ~6 named players) via `upsertProfile` using **stable ids**, so repeated seeding does not duplicate them. No avatars needed (colored-initial fallback is fine).
+- Each seeded game picks a random subset (2–6) of these profiles; every `GameResult` carries the profile's `profileId` and `name` (and `avatar` if the profile has one) so seeded history links to real, editable/deletable profiles — letting Task 44's "deleted" and leaderboard-exclusion behavior be tested by deleting a seeded profile.
+- Keep it strictly dev-only (still gated behind `import.meta.env.DEV` at the call site) and self-contained in `gameHistory.ts` (or a small helper it calls).

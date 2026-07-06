@@ -340,3 +340,32 @@ The profile create/edit form now offers two explicit, app-styled source buttons 
 - No `getUserMedia`/in-app live-camera UI — this stays a native-picker feature, so it works offline in the PWA with no camera-permission plumbing.
 - i18n: retired the now-unused `uploadPhoto`; added `takePhoto` / `choosePhoto` (types + de + en). DE: „Foto aufnehmen" / „Foto auswählen".
 - Build + lint pass.
+
+## TASK 43 — Cleaner profile rows; delete moved into the edit modal ✅
+Profile list rows in `ProfilePickerModal` are now just the entry (avatar + name), and deletion happens inside the edit form instead of on every row.
+- `src/components/ProfilePickerModal.tsx`:
+  - **List rows:** dropped the per-row ✏️ (edit) and 🗑️ (delete) buttons in both modes; each row is now a single full-width `<button>` (avatar + name) with a hover state. Tap behavior is unchanged per mode — picker mode (`onSelect` present) still **assigns** the profile to the slot; manage mode (no `onSelect`, from the 👤 TopBar button) still opens the editor via `startEdit`. `aria-label` is `editProfile` (manage) / `chooseProfile` (picker).
+  - **Edit form header:** now a `flex justify-between` row; when editing an existing profile (`draft.id` set) it shows a 🗑️ delete button in the **top-right** that opens the existing `confirmDelete` overlay for that profile. Creating a new profile (`draft.id === null`) shows no delete button.
+  - `doDelete` now also `setDraft(null)` so confirming a delete from the edit form returns to the refreshed list (profiles reloaded via `setProfiles(loadProfiles())`). The shared `confirmDelete` overlay + `doDelete` are otherwise unchanged.
+- Net effect: editing/deleting is a management action reached through the 👤 popup (row-tap → edit → 🗑️); the setup-slot picker stays a clean assign-on-tap list. No i18n or live-propagation (Task 41) changes.
+- Build + lint pass.
+
+## TASK 44 — Deleted profiles: "Deleted" in game history, dropped from leaderboards ✅
+When a linked profile is deleted, past games still render but the player's identity shows as removed, and the profile no longer appears in the 🏆 leaderboards.
+- `src/utils/gameHistory.ts`:
+  - Added `existingProfileIds(): Set<string>` (ids of currently-saved profiles) and `isProfileDeleted(profileId, ids?)` — true only when a `profileId` is present but no longer resolves to a saved profile; profile-less/legacy results are never "deleted". `ids` can be preloaded to avoid per-row `localStorage` reads. Imports `loadProfiles` alongside `getProfile`.
+  - `aggregateStats` now preloads `existingProfileIds()` and `continue`s past any result whose profile was deleted, so deleted profiles drop out of every leaderboard (`rankBy`) and their games stop contributing to their own aggregate. Records without a `profileId` are unaffected.
+- `src/components/HistoryModal.tsx`: per-game result rows now compute `deleted = isProfileDeleted(r.profileId, existingIds)` (new `existingIds` memo derived from the existing `profilesMap`). Deleted rows render the `deletedProfile` label (italic, muted) with the colored-initial fallback avatar (`avatar={undefined}`) instead of a stale cached photo; the avatar's name/color index also use the display label.
+- `src/components/HistoryBoardModal.tsx`: the read-only scorecard's player mapping applies the same rule — deleted → `t.deletedProfile` + fallback avatar; memo dep now includes `t`.
+- Leaderboard rows themselves need no change (deleted entries are already excluded upstream in `aggregateStats`).
+- i18n: added `deletedProfile` (types + de + en) — DE „Gelöscht", EN „Deleted".
+- Build + lint pass.
+
+## TASK 45 — Dev seeding: predefined profiles linked to the seeded games ✅
+The dev-only debug seeding now creates real, linked profiles instead of throwaway "Player N" names, so profile-driven history / leaderboard / deleted-profile behavior (Task 44) can be exercised end-to-end.
+- `src/utils/gameHistory.ts`:
+  - Added a fixed `DEBUG_PROFILES` roster (6 named players: Anna, Ben, Clara, David, Emma, Felix) with **stable ids** (`debug-anna` …).
+  - `ensureDebugProfiles()` upserts each by id (idempotent — repeated seeding never duplicates them) and returns the current roster. Imports `upsertProfile` alongside `getProfile`/`loadProfiles`.
+  - `seedDebugHistory()` now draws each game's 2–6 players from a shuffled subset of the roster; every `GameResult` carries the profile's `profileId`, `name`, and `avatar`, so seeded history links to real, editable/deletable profiles. Deleting a seeded profile via the 👤 manager now demonstrates Task 44's "Deleted" label + leaderboard exclusion. Still dev-only (gated behind `import.meta.env.DEV` at the `HistoryModal` seed-button call site).
+- No new dependencies, no i18n changes; the seed button label is unchanged.
+- Build + lint pass.

@@ -139,6 +139,7 @@ const de: Translations = {
   // Manage profiles (Task 41)
   manageProfiles: 'Profile verwalten',
   close: 'Schließen',
+  deletedProfile: 'Gelöscht',
 }
 
 export default de
