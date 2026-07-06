@@ -49,7 +49,7 @@ function calcPlacements(players: { name: string; scores: Parameters<typeof calcG
 
 export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Props) {
   const { t } = useTranslation()
-  const { state, score, cross, correctScore, correctCross, removeMove, undo, setDice, canUndo } = useGameState(playerNames)
+  const { state, score, cross, correctScore, correctCross, removeMove, revertCorrection, undo, setDice, canUndo } = useGameState(playerNames)
   const [popup, setPopup] = useState<ActivePopup>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [overlayOpen, setOverlayOpen] = useState(state.isGameOver)
@@ -172,11 +172,10 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
   }
 
   // Cancelling a correction reverts the removeMove that started it (Task 18/22),
-  // so the original move isn't lost. removeMove pushed a history snapshot, so undo
-  // restores the cell + log entry cleanly. Undo is disabled while correcting, so the
-  // top of the history stack is guaranteed to be that removal.
+  // so the original move isn't lost. removeMove buffered the pre-removal state off
+  // the main undo stack; revertCorrection restores the cell + log entry from it.
   function cancelCorrection() {
-    undo()
+    revertCorrection()
     setCorrectingPlayerIndex(null)
     setCorrectionSlot(null)
   }
@@ -188,7 +187,7 @@ export function GameScreen({ playerNames, virtualDice, onNewGame, onCancel }: Pr
     removeMove(moveId)
     setHistoryPlayer(null)
     setCorrectingPlayerIndex(player)
-    setCorrectionSlot(original ? { index, timestamp: original.timestamp } : null)
+    setCorrectionSlot(original ? { id: original.id, index, timestamp: original.timestamp } : null)
   }
 
   function handleDiceFinish(values: number[]) {
