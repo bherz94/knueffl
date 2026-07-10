@@ -37,27 +37,27 @@ export function UpperInputPopup({ dieIndex, onConfirm, onCancel }: Props) {
   }, [selected, dieValue, onConfirm, onCancel])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onCancel}>
       <div
-        className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 w-72 border border-slate-200 dark:border-slate-700"
+        className="bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl p-7 w-full max-w-sm border border-slate-200 dark:border-zinc-700"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-4 text-center">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100 mb-5 text-center">
           {t.howMany(dieName)}
         </h2>
 
         {/* Die face count buttons 1-5 */}
-        <div className="flex justify-center gap-2 mb-6">
+        <div className="flex justify-center gap-2.5 mb-6">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
               type="button"
               onClick={() => setSelected(n)}
               className={[
-                'w-11 h-11 rounded-xl text-base font-bold transition-all border-2',
+                'flex-1 aspect-square rounded-xl text-lg font-bold transition-all border-2',
                 selected === n
-                  ? 'bg-indigo-600 dark:bg-indigo-500 text-white border-indigo-600 dark:border-indigo-500 scale-110 shadow-md'
-                  : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-600 hover:border-indigo-400 dark:hover:border-indigo-500',
+                  ? 'bg-teal-600 dark:bg-teal-600 text-white border-teal-600 dark:border-teal-600 scale-110 shadow-md'
+                  : 'bg-white dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 border-slate-200 dark:border-zinc-600 hover:border-teal-400 dark:hover:border-teal-600',
               ].join(' ')}
             >
               {n}
@@ -66,15 +66,15 @@ export function UpperInputPopup({ dieIndex, onConfirm, onCancel }: Props) {
         </div>
 
         {/* Score preview */}
-        <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-4 h-5">
+        <p className="text-center text-base text-slate-500 dark:text-zinc-400 mb-5 h-6">
           {selected !== null ? `${selected} × ${dieValue} = ${selected * dieValue}` : ''}
         </p>
 
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 py-2 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+            className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-zinc-600 text-slate-600 dark:text-zinc-400 text-base font-semibold hover:bg-slate-50 dark:hover:bg-zinc-700 transition"
           >
             {t.cancel}
           </button>
@@ -82,7 +82,7 @@ export function UpperInputPopup({ dieIndex, onConfirm, onCancel }: Props) {
             type="button"
             onClick={handleConfirm}
             disabled={selected === null}
-            className="flex-1 py-2 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-semibold disabled:opacity-40 hover:bg-indigo-700 dark:hover:bg-indigo-600 transition"
+            className="flex-1 py-3 rounded-xl bg-teal-600 dark:bg-teal-600 text-white text-base font-semibold disabled:opacity-40 hover:bg-teal-700 dark:hover:bg-teal-700 transition"
           >
             {t.confirm}
           </button>

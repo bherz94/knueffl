@@ -86,7 +86,7 @@ function AppInner() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col bg-slate-50 dark:bg-slate-900 transition-colors">
+    <div className="min-h-dvh flex flex-col bg-slate-50 dark:bg-zinc-900 transition-colors">
       <TopBar />
       {view === 'setup' && (
         <SetupScreen

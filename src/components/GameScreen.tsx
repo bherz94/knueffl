@@ -200,10 +200,10 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
   const currentPlayer = state.players[state.currentPlayerIndex]
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900">
+    <div className="flex-1 flex flex-col bg-slate-50 dark:bg-zinc-900">
       {/* Turn indicator */}
       {(!state.isGameOver || !overlayOpen) && (
-        <div className="bg-indigo-600 dark:bg-indigo-700 text-white flex items-center justify-between py-2 px-4 gap-3">
+        <div className="bg-teal-600 dark:bg-teal-700 text-white flex items-center justify-between py-2 px-4 gap-3">
           {/* Left button */}
           {state.isGameOver ? (
             <button
@@ -260,7 +260,7 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
                   />
                 )}
                 {t.currentTurn(currentPlayer.name)}
-                <span className="ml-2 text-indigo-200 text-xs hidden sm:inline">{t.crossOutHint}</span>
+                <span className="ml-2 text-teal-200 text-xs hidden sm:inline">{t.crossOutHint}</span>
               </span>
             )}
           </div>
@@ -335,7 +335,7 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
 
       {/* Floating dice result pill — fixed bottom-center, always visible while scrolling */}
       {diceValues && !state.isGameOver && !diceModalOpen && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-indigo-700 dark:bg-indigo-800 rounded-full px-3 py-1.5 shadow-xl">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-teal-700 dark:bg-teal-800 rounded-full px-3 py-1.5 shadow-xl">
           {diceValues.map((v, i) => (
             <span
               key={i}
@@ -374,18 +374,18 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
           onClick={() => setShowCancelConfirm(false)}
         >
           <div
-            className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-4"
+            className="w-full max-w-sm bg-white dark:bg-zinc-800 rounded-2xl shadow-xl border border-slate-200 dark:border-zinc-700 p-6 flex flex-col gap-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.cancelConfirmTitle}</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t.cancelConfirmMessage}</p>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">{t.cancelConfirmTitle}</h2>
+              <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">{t.cancelConfirmMessage}</p>
             </div>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-zinc-600 transition-colors"
               >
                 {t.cancelConfirmNo}
               </button>

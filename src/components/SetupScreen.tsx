@@ -109,19 +109,19 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
       <div className="w-full max-w-md">
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-center text-indigo-600 dark:text-indigo-400 mb-1">
+        <h1 className="text-4xl font-bold text-center text-teal-600 dark:text-teal-500 mb-1">
           🎲 {t.appTitle}
         </h1>
-        <p className="text-center text-slate-500 dark:text-slate-400 mb-8 text-sm">
+        <p className="text-center text-slate-500 dark:text-zinc-400 mb-8 text-sm">
           {t.setupSubtitle}
         </p>
 
         {/* Card */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 space-y-6">
+        <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-slate-200 dark:border-zinc-700 p-6 space-y-6">
 
           {/* Player count */}
           <div>
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+            <p className="text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-3">
               {t.playerCount}
             </p>
             <div className="flex items-center justify-between gap-2">
@@ -129,7 +129,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                 type="button"
                 onClick={() => setPlayerCount(count - 1)}
                 disabled={count <= MIN_PLAYERS}
-                className="w-10 h-10 flex-shrink-0 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-bold text-lg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors"
+                className="w-10 h-10 flex-shrink-0 rounded-full bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 font-bold text-lg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-teal-200 dark:hover:bg-teal-900/60 transition-colors"
                 aria-label={t.removePlayer}
               >
                 −
@@ -144,8 +144,8 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                     className={[
                       'w-9 h-9 rounded-full text-sm font-semibold transition-all',
                       n === count
-                        ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-md scale-110'
-                        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40',
+                        ? 'bg-teal-600 dark:bg-teal-600 text-white shadow-md scale-110'
+                        : 'bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-zinc-300 hover:bg-teal-100 dark:hover:bg-teal-900/40',
                     ].join(' ')}
                   >
                     {n}
@@ -157,7 +157,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                 type="button"
                 onClick={() => setPlayerCount(count + 1)}
                 disabled={count >= MAX_PLAYERS}
-                className="w-10 h-10 flex-shrink-0 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-bold text-lg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors"
+                className="w-10 h-10 flex-shrink-0 rounded-full bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 font-bold text-lg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-teal-200 dark:hover:bg-teal-900/60 transition-colors"
                 aria-label={t.addPlayer}
               >
                 +
@@ -167,7 +167,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
 
           {/* Player slots — tap to choose a profile */}
           <div>
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+            <p className="text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-3">
               {t.playerName}
             </p>
             <div className="flex flex-col gap-2">
@@ -179,7 +179,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                     ref={(el) => { rowRefs.current[i] = el }}
                     className={[
                       'flex items-center gap-2 rounded-lg transition-[opacity,box-shadow]',
-                      dragIndex === i ? 'opacity-70 shadow-lg ring-2 ring-indigo-400 dark:ring-indigo-500' : '',
+                      dragIndex === i ? 'opacity-70 shadow-lg ring-2 ring-teal-400 dark:ring-teal-600' : '',
                     ].join(' ')}
                   >
                     <span
@@ -189,11 +189,11 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                       onPointerCancel={handleDragEnd}
                       role="button"
                       aria-label={t.reorderPlayer}
-                      className="w-6 h-7 flex-shrink-0 flex items-center justify-center text-slate-300 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-300 cursor-grab active:cursor-grabbing touch-none select-none"
+                      className="w-6 h-7 flex-shrink-0 flex items-center justify-center text-slate-300 dark:text-zinc-500 hover:text-slate-500 dark:hover:text-zinc-300 cursor-grab active:cursor-grabbing touch-none select-none"
                     >
                       ⠿
                     </span>
-                    <span className="w-7 h-7 flex-shrink-0 rounded-full bg-indigo-600 dark:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center">
+                    <span className="w-7 h-7 flex-shrink-0 rounded-full bg-teal-600 dark:bg-teal-600 text-white text-xs font-bold flex items-center justify-center">
                       {i + 1}
                     </span>
                     <button
@@ -202,8 +202,8 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                       className={[
                         'flex-1 min-w-0 flex items-center gap-3 px-3 py-2 rounded-lg border text-sm transition',
                         filled
-                          ? 'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50'
-                          : 'border-dashed border-slate-300 dark:border-slate-600 bg-transparent',
+                          ? 'border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700/50'
+                          : 'border-dashed border-slate-300 dark:border-zinc-600 bg-transparent',
                       ].join(' ')}
                     >
                       {filled ? (
@@ -211,20 +211,20 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                           {player.avatar ? (
                             <img src={player.avatar} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
                           ) : (
-                            <span className="w-8 h-8 rounded-full bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 uppercase">
+                            <span className="w-8 h-8 rounded-full bg-teal-600 dark:bg-teal-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 uppercase">
                               {player.name.trim().slice(0, 2)}
                             </span>
                           )}
-                          <span className="flex-1 min-w-0 truncate text-left font-semibold text-slate-900 dark:text-slate-100">
+                          <span className="flex-1 min-w-0 truncate text-left font-semibold text-slate-900 dark:text-zinc-100">
                             {player.name}
                           </span>
                         </>
                       ) : (
                         <>
-                          <span className="w-8 h-8 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-500 text-slate-400 dark:text-slate-500 flex items-center justify-center flex-shrink-0">
+                          <span className="w-8 h-8 rounded-full border-2 border-dashed border-slate-300 dark:border-zinc-500 text-slate-400 dark:text-zinc-500 flex items-center justify-center flex-shrink-0">
                             +
                           </span>
-                          <span className="flex-1 min-w-0 text-left text-slate-400 dark:text-slate-500">
+                          <span className="flex-1 min-w-0 text-left text-slate-400 dark:text-zinc-500">
                             {t.chooseProfile}
                           </span>
                         </>
@@ -235,7 +235,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                         type="button"
                         onClick={() => clearSlot(i)}
                         aria-label={t.removePlayer}
-                        className="w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        className="w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center text-slate-400 dark:text-zinc-500 hover:bg-slate-100 dark:hover:bg-zinc-700 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                       >
                         ✕
                       </button>
@@ -252,9 +252,9 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
               type="checkbox"
               checked={virtualDice}
               onChange={(e) => setVirtualDice(e.target.checked)}
-              className="w-4 h-4 rounded accent-indigo-600 cursor-pointer"
+              className="w-4 h-4 rounded accent-teal-600 cursor-pointer"
             />
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <span className="text-sm font-semibold text-slate-700 dark:text-zinc-300">
               🎲 {t.virtualDice}
             </span>
           </label>
@@ -264,7 +264,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
             type="button"
             onClick={handleStart}
             disabled={!allFilled}
-            className="w-full py-3 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white font-semibold text-base shadow-md hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="w-full py-3 rounded-xl bg-teal-600 dark:bg-teal-600 text-white font-semibold text-base shadow-md hover:bg-teal-700 dark:hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
             {t.startGame}
           </button>

@@ -14,6 +14,29 @@ function rand(): number {
   return Math.floor(Math.random() * 6) + 1
 }
 
+// Pip positions on a 3×3 grid (index 0=top-left … 8=bottom-right) per die value.
+const PIP_LAYOUT: Record<number, number[]> = {
+  1: [4],
+  2: [0, 8],
+  3: [0, 4, 8],
+  4: [0, 2, 6, 8],
+  5: [0, 2, 4, 6, 8],
+  6: [0, 2, 3, 5, 6, 8],
+}
+
+function DieFace({ value, pipClass }: { value: number; pipClass: string }) {
+  const active = new Set(PIP_LAYOUT[value] ?? [])
+  return (
+    <div className="grid grid-cols-3 grid-rows-3 gap-0.5 w-9 h-9">
+      {Array.from({ length: 9 }, (_, i) => (
+        <span key={i} className="flex items-center justify-center">
+          {active.has(i) && <span className={`w-2 h-2 rounded-full ${pipClass}`} />}
+        </span>
+      ))}
+    </div>
+  )
+}
+
 export function DiceModal({ onFinish, onClose }: Props) {
   const { t } = useTranslation()
   const [values, setValues] = useState<number[]>([1, 1, 1, 1, 1])
@@ -62,17 +85,17 @@ export function DiceModal({ onFinish, onClose }: Props) {
     >
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className="relative z-10 w-full max-w-sm bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-5"
+        className="relative z-10 w-full max-w-sm bg-white dark:bg-zinc-800 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-zinc-700 p-6 flex flex-col gap-5"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
             🎲 {t.rollDice}
           </h2>
           <div className="flex items-center gap-2">
             {hasRolled && (
-              <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
+              <span className="text-xs tabular-nums text-slate-500 dark:text-zinc-400">
                 {t.throwNumber(throwsUsed, MAX_THROWS)}
               </span>
             )}
@@ -80,7 +103,7 @@ export function DiceModal({ onFinish, onClose }: Props) {
               <button
                 type="button"
                 onClick={onClose}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-sm"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-500 hover:bg-slate-200 dark:hover:bg-zinc-600 transition-colors text-sm"
               >
                 ✕
               </button>
@@ -93,6 +116,11 @@ export function DiceModal({ onFinish, onClose }: Props) {
           {values.map((v, i) => {
             const isKept = kept[i]
             const isAnimating = rolling && !kept[i]
+            const pipClass = isKept
+              ? 'bg-white'
+              : isAnimating
+                ? 'bg-slate-300 dark:bg-zinc-500'
+                : 'bg-slate-800 dark:bg-zinc-100'
             return (
               <button
                 key={i}
@@ -102,22 +130,22 @@ export function DiceModal({ onFinish, onClose }: Props) {
                 className={[
                   'w-14 h-14 rounded-xl text-2xl font-bold transition-all select-none flex items-center justify-center',
                   isKept
-                    ? 'bg-indigo-500 dark:bg-indigo-600 text-white scale-105 shadow-md'
+                    ? 'bg-teal-500 dark:bg-teal-600 scale-105 shadow-md'
                     : isAnimating
-                      ? 'bg-slate-100 dark:bg-slate-700 text-slate-300 dark:text-slate-500'
+                      ? 'bg-slate-100 dark:bg-zinc-700'
                       : hasRolled
-                        ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-600'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 border-2 border-slate-200 dark:border-slate-700',
+                        ? 'bg-white dark:bg-zinc-700 border-2 border-slate-200 dark:border-zinc-600'
+                        : 'bg-slate-100 dark:bg-zinc-800 text-slate-300 dark:text-zinc-600 border-2 border-slate-200 dark:border-zinc-700',
                 ].join(' ')}
               >
-                {hasRolled || rolling ? v : '?'}
+                {hasRolled || rolling ? <DieFace value={v} pipClass={pipClass} /> : '?'}
               </button>
             )
           })}
         </div>
 
         {hasRolled && !isFinished && !rolling && (
-          <p className="text-center text-xs text-slate-400 dark:text-slate-500 -mt-2">
+          <p className="text-center text-xs text-slate-400 dark:text-zinc-500 -mt-2">
             {t.keepToggleHint}
           </p>
         )}
@@ -128,7 +156,7 @@ export function DiceModal({ onFinish, onClose }: Props) {
             <button
               type="button"
               onClick={() => onFinish(values)}
-              className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+              className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-zinc-600 transition-colors"
             >
               {t.finishRolling}
             </button>
@@ -137,7 +165,7 @@ export function DiceModal({ onFinish, onClose }: Props) {
             <button
               type="button"
               onClick={() => onFinish(values)}
-              className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition-colors"
+              className="flex-1 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm transition-colors"
             >
               ✓ {t.finishRolling}
             </button>
@@ -146,7 +174,7 @@ export function DiceModal({ onFinish, onClose }: Props) {
               type="button"
               onClick={rollDice}
               disabled={rolling}
-              className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold text-sm transition-colors"
+              className="flex-1 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-semibold text-sm transition-colors"
             >
               {hasRolled ? `🎲 ${t.rollAgain}` : `🎲 ${t.rollDice}`}
             </button>

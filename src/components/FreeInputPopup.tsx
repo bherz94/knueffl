@@ -57,27 +57,27 @@ export function FreeInputPopup({ onConfirm, onCancel }: Props) {
   }, [appendDigit, backspace, handleConfirm, onCancel])
 
   const keypadBtn =
-    'h-12 rounded-xl text-lg font-bold transition-all border-2 bg-white dark:bg-slate-700 ' +
-    'text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-600 ' +
-    'hover:border-indigo-400 dark:hover:border-indigo-500 active:scale-95 select-none'
+    'h-14 rounded-xl text-xl font-bold transition-all border-2 bg-white dark:bg-zinc-700 ' +
+    'text-slate-700 dark:text-zinc-200 border-slate-200 dark:border-zinc-600 ' +
+    'hover:border-teal-400 dark:hover:border-teal-600 active:scale-95 select-none'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onCancel}>
       <div
-        className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 w-72 border border-slate-200 dark:border-slate-700"
+        className="bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl p-7 w-full max-w-sm border border-slate-200 dark:border-zinc-700"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-4 text-center">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100 mb-5 text-center">
           {t.enterScore}
         </h2>
 
         {/* Read-only entry display */}
-        <div className="w-full px-4 py-3 text-center text-2xl font-bold rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 mb-4 h-14 flex items-center justify-center">
-          {raw === '' ? <span className="text-slate-400 dark:text-slate-500">1–30</span> : raw}
+        <div className="w-full px-4 py-3 text-center text-3xl font-bold rounded-xl border-2 border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700 text-slate-900 dark:text-zinc-100 mb-5 h-16 flex items-center justify-center">
+          {raw === '' ? <span className="text-slate-400 dark:text-zinc-500">1–30</span> : raw}
         </div>
 
         {/* On-screen keypad */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="grid grid-cols-3 gap-2.5 mb-5">
           {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
             <button key={d} type="button" onClick={() => appendDigit(d)} className={keypadBtn}>
               {d}
@@ -104,11 +104,11 @@ export function FreeInputPopup({ onConfirm, onCancel }: Props) {
           </button>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 py-2 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+            className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-zinc-600 text-slate-600 dark:text-zinc-400 text-base font-semibold hover:bg-slate-50 dark:hover:bg-zinc-700 transition"
           >
             {t.cancel}
           </button>
@@ -116,7 +116,7 @@ export function FreeInputPopup({ onConfirm, onCancel }: Props) {
             type="button"
             onClick={handleConfirm}
             disabled={!isValid}
-            className="flex-1 py-2 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-semibold disabled:opacity-40 hover:bg-indigo-700 dark:hover:bg-indigo-600 transition"
+            className="flex-1 py-3 rounded-xl bg-teal-600 dark:bg-teal-600 text-white text-base font-semibold disabled:opacity-40 hover:bg-teal-700 dark:hover:bg-teal-700 transition"
           >
             {t.confirm}
           </button>

@@ -63,7 +63,7 @@ export function HistoryBoardModal({ record, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[85vh]"
+        className="w-full max-w-lg bg-white dark:bg-zinc-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-zinc-700 flex flex-col max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -71,14 +71,14 @@ export function HistoryBoardModal({ record, onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-sm"
+            className="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-500 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-600 transition-colors text-sm"
             aria-label={t.cancel}
           >
             ✕
           </button>
           <div className="text-center">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.gameBoardTitle}</h2>
-            <div className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">{dateLabel}</div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">{t.gameBoardTitle}</h2>
+            <div className="text-xs font-medium text-slate-400 dark:text-zinc-500 mt-0.5">{dateLabel}</div>
           </div>
         </div>
 
@@ -111,7 +111,7 @@ function BoardMessage({ message }: { message: string }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
       <div className="text-3xl" aria-hidden>🎲</div>
-      <p className="text-sm text-slate-500 dark:text-slate-400">{message}</p>
+      <p className="text-sm text-slate-500 dark:text-zinc-400">{message}</p>
     </div>
   )
 }

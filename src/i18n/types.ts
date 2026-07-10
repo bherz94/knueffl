@@ -63,6 +63,7 @@ export interface Translations {
   crossOutHint: string
   enterScore: string
   allEyes: string
+  countAllOf: (n: number) => string
   clear: string
   backspace: string
 

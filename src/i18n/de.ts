@@ -65,6 +65,7 @@ const de: Translations = {
   crossOutHint: 'Gedrückt halten zum Streichen',
   enterScore: 'Punkte eingeben (0–30)',
   allEyes: 'Alle Augen zählen',
+  countAllOf: (n) => `Alle ${n}er zählen`,
   clear: 'Löschen',
   backspace: 'Rücktaste',
 

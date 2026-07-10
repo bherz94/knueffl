@@ -27,7 +27,7 @@ function Avatar({ profile, size = 'md' }: { profile: { name: string; avatar?: st
   const initial = profile.name.trim().slice(0, 2).toUpperCase() || '?'
   return (
     <span
-      className={`${dims} rounded-full bg-indigo-600 dark:bg-indigo-500 text-white font-bold flex items-center justify-center flex-shrink-0`}
+      className={`${dims} rounded-full bg-teal-600 dark:bg-teal-600 text-white font-bold flex items-center justify-center flex-shrink-0`}
     >
       {initial}
     </span>
@@ -96,14 +96,14 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[85vh]"
+        className="w-full max-w-sm bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-zinc-700 flex flex-col max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {draft ? (
           /* ---- Create / edit form ---- */
           <>
-            <div className="p-5 pb-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+            <div className="p-5 pb-3 border-b border-slate-200 dark:border-zinc-700 flex items-center justify-between gap-3">
+              <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100">
                 {draft.id ? t.editProfile : t.newProfile}
               </h2>
               {/* Delete only when editing an existing profile; returns to the list after. */}
@@ -115,7 +115,7 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
                     if (p) setConfirmDelete(p)
                   }}
                   aria-label={t.deleteProfile}
-                  className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                  className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                 >
                   🗑️
                 </button>
@@ -129,12 +129,12 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-wrap gap-2">
                     {/* Camera: `capture` opens it directly on mobile; degrades to a file dialog on desktop. */}
-                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-sm font-semibold cursor-pointer hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
+                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 text-sm font-semibold cursor-pointer hover:bg-teal-200 dark:hover:bg-teal-900/60 transition-colors">
                       📷 {t.takePhoto}
                       <input type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
                     </label>
                     {/* No `capture` → photo library / file picker. */}
-                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-sm font-semibold cursor-pointer hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
+                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 text-sm font-semibold cursor-pointer hover:bg-teal-200 dark:hover:bg-teal-900/60 transition-colors">
                       🖼️ {t.choosePhoto}
                       <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
                     </label>
@@ -143,7 +143,7 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
                     <button
                       type="button"
                       onClick={() => setDraft({ ...draft, avatar: undefined })}
-                      className="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 text-left transition-colors"
+                      className="text-xs text-slate-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 text-left transition-colors"
                     >
                       {t.removePhoto}
                     </button>
@@ -153,7 +153,7 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
 
               {/* Name */}
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                   {t.profileName}
                 </label>
                 <input
@@ -163,16 +163,16 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
                   placeholder={t.profileNamePlaceholder}
                   maxLength={20}
                   autoFocus
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700/50 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 dark:focus:ring-teal-500 focus:border-transparent transition"
                 />
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex gap-3">
+            <div className="p-4 border-t border-slate-200 dark:border-zinc-700 flex gap-3">
               <button
                 type="button"
                 onClick={() => setDraft(null)}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-zinc-600 transition-colors"
               >
                 {t.cancel}
               </button>
@@ -180,7 +180,7 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
                 type="button"
                 onClick={saveDraft}
                 disabled={draft.name.trim().length === 0}
-                className="flex-1 py-2.5 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white font-semibold text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 py-2.5 rounded-xl bg-teal-600 dark:bg-teal-600 text-white font-semibold text-sm hover:bg-teal-700 dark:hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {t.save}
               </button>
@@ -189,15 +189,15 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
         ) : (
           /* ---- Profile list ---- */
           <>
-            <div className="p-5 pb-3 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+            <div className="p-5 pb-3 border-b border-slate-200 dark:border-zinc-700">
+              <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100">
                 {managing ? t.manageProfiles : t.chooseProfile}
               </h2>
             </div>
 
             <div className="overflow-y-auto p-3 flex flex-col gap-2">
               {profiles.length === 0 ? (
-                <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-8">{t.noProfilesYet}</p>
+                <p className="text-sm text-slate-400 dark:text-zinc-500 text-center py-8">{t.noProfilesYet}</p>
               ) : (
                 profiles.map((p) => {
                   // In picker mode, a profile already used by another slot can't be picked again.
@@ -210,14 +210,14 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
                       disabled={isDisabled}
                       onClick={() => (onSelect ? onSelect(p) : startEdit(p))}
                       aria-label={managing ? t.editProfile : t.chooseProfile}
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-50 dark:disabled:hover:bg-slate-700/50"
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700/50 text-left hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-50 dark:disabled:hover:bg-zinc-700/50"
                     >
                       <Avatar profile={p} />
-                      <span className="flex-1 min-w-0 text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                      <span className="flex-1 min-w-0 text-sm font-semibold text-slate-800 dark:text-zinc-200 truncate">
                         {p.name}
                       </span>
                       {isDisabled && (
-                        <span className="flex-shrink-0 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                        <span className="flex-shrink-0 text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wide">
                           {t.profileInGame}
                         </span>
                       )}
@@ -227,18 +227,18 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
               )}
             </div>
 
-            <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex flex-col gap-2">
+            <div className="p-4 border-t border-slate-200 dark:border-zinc-700 flex flex-col gap-2">
               <button
                 type="button"
                 onClick={startNew}
-                className="w-full py-2.5 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white font-semibold text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
+                className="w-full py-2.5 rounded-xl bg-teal-600 dark:bg-teal-600 text-white font-semibold text-sm hover:bg-teal-700 dark:hover:bg-teal-700 transition-colors"
               >
                 + {t.newProfile}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+                className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-zinc-600 transition-colors"
               >
                 {managing ? t.close : t.cancel}
               </button>
@@ -253,17 +253,17 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
             onClick={() => setConfirmDelete(null)}
           >
             <div
-              className="w-full max-w-xs bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-5 flex flex-col gap-4"
+              className="w-full max-w-xs bg-white dark:bg-zinc-800 rounded-2xl shadow-xl border border-slate-200 dark:border-zinc-700 p-5 flex flex-col gap-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              <p className="text-sm font-semibold text-slate-800 dark:text-zinc-200">
                 {t.deleteProfileConfirm(confirmDelete.name)}
               </p>
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(null)}
-                  className="flex-1 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+                  className="flex-1 py-2 rounded-xl border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-zinc-600 transition-colors"
                 >
                   {t.cancel}
                 </button>

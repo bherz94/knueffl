@@ -25,8 +25,12 @@ interface Props {
   correctingPlayerIndex?: number | null
 }
 
+const UPPER_FACE: Record<string, number> = {
+  ones: 1, twos: 2, threes: 3, fours: 4, fives: 5, sixes: 6,
+}
+
 function categoryHint(t: ReturnType<typeof useTranslation>['t'], meta: CategoryMeta): string | null {
-  if (meta.inputKind === 'upper') return t.allEyes
+  if (meta.inputKind === 'upper') return t.countAllOf(UPPER_FACE[meta.id])
   if (meta.id === 'fullHouse') return t.fullHousePoints
   if (meta.id === 'smallStraight') return t.smallStraightPoints
   if (meta.id === 'largeStraight') return t.largeStraightPoints
@@ -70,15 +74,15 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
     return (
       <tr
         key={meta.id}
-        className={zebra ? 'bg-slate-50/50 dark:bg-slate-800/20' : ''}
+        className={zebra ? 'bg-slate-50/50 dark:bg-zinc-800/20' : ''}
       >
-        <td className="sticky left-0 z-10 bg-inherit px-3 py-1 border-b border-slate-100 dark:border-slate-800">
+        <td className="sticky left-0 z-10 bg-inherit px-3 py-1 border-b border-slate-100 dark:border-zinc-800">
           <div className="flex flex-col leading-tight">
-            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+            <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 whitespace-nowrap">
               {categoryLabel(t, meta.id)}
             </span>
             {hint && (
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 whitespace-nowrap">
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500 whitespace-nowrap">
                 {hint}
               </span>
             )}
@@ -87,8 +91,8 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
 
         {players.map((player, pi) => (
           <td key={pi} className={[
-            'px-1 py-1 border-b border-slate-100 dark:border-slate-800',
-            pi === activeIndex ? 'bg-indigo-50/60 dark:bg-indigo-900/10' : '',
+            'px-1 py-1 border-b border-slate-100 dark:border-zinc-800',
+            pi === activeIndex ? 'bg-teal-50/60 dark:bg-teal-900/10' : '',
           ].join(' ')}>
             <ScoreCell
               cell={player.scores[meta.id]}
@@ -118,21 +122,20 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
     showWinner = false,
   ) {
     return (
-      <tr className={highlight ? 'bg-indigo-50/40 dark:bg-indigo-900/10' : 'bg-slate-50 dark:bg-slate-800/30'}>
-        <td className="sticky left-0 z-10 bg-inherit px-3 py-1 border-b border-slate-100 dark:border-slate-800">
-          <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide whitespace-nowrap">
+      <tr className={highlight ? 'bg-teal-50/40 dark:bg-teal-900/10' : 'bg-slate-50 dark:bg-zinc-800/30'}>
+        <td className="sticky left-0 z-10 bg-inherit px-3 py-1 border-b border-slate-100 dark:border-zinc-800">
+          <span className="text-xs font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wide whitespace-nowrap">
             {label}
           </span>
         </td>
         {players.map((player, pi) => (
           <td key={pi} className={[
-            'px-1 py-1 border-b border-slate-100 dark:border-slate-800',
-            pi === activeIndex ? 'bg-indigo-50/60 dark:bg-indigo-900/10' : '',
+            'px-1 py-1 border-b border-slate-100 dark:border-zinc-800',
+            pi === activeIndex ? 'bg-teal-50/60 dark:bg-teal-900/10' : '',
           ].join(' ')}>
             <AutoCell
               value={!showFor || showFor(player) ? getValue(player) : null}
               highlight={highlight}
-              isActive={pi === activeIndex}
               isWinner={showWinner && winnerSet.has(pi)}
             />
           </td>
@@ -154,20 +157,20 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
 
         <thead>
           <tr>
-            <th className="sticky left-0 z-20 bg-white dark:bg-slate-900 px-3 py-2 border-b-2 border-slate-200 dark:border-slate-700" />
+            <th className="sticky left-0 z-20 bg-white dark:bg-zinc-900 px-3 py-2 border-b-2 border-slate-200 dark:border-zinc-700" />
             {players.map((player, i) => (
               <th
                 key={i}
                 className={[
-                  'px-1 py-1 border-b-2 border-slate-200 dark:border-slate-700',
-                  i === activeIndex ? 'bg-indigo-50/60 dark:bg-indigo-900/10' : 'bg-white dark:bg-slate-900',
+                  'px-1 py-1 border-b-2 border-slate-200 dark:border-zinc-700',
+                  i === activeIndex ? 'bg-teal-50/60 dark:bg-teal-900/10' : 'bg-white dark:bg-zinc-900',
                 ].join(' ')}
               >
                 {onHeaderClick ? (
                   <button
                     type="button"
                     onClick={() => onHeaderClick(i)}
-                    className="w-full rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    className="w-full rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                     title={t.moveHistory}
                   >
                     <PlayerHeader
@@ -196,14 +199,14 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
           <SectionHeader label={t.upperSection} colSpan={colSpan} />
           {UPPER_CATEGORIES.map((meta, idx) => renderCategoryRow(meta, idx % 2 === 1))}
           {renderAutoRow(t.upperSubtotal, (p) => calcUpperSubtotal(p.scores))}
-          {renderAutoRow(t.bonus, (p) => calcBonus(p.scores), true)}
-          {renderAutoRow(t.upperTotal, (p) => calcUpperTotal(p.scores), true)}
+          {renderAutoRow(t.bonus, (p) => calcBonus(p.scores))}
+          {renderAutoRow(t.upperTotal, (p) => calcUpperTotal(p.scores))}
 
           <SectionHeader label={t.lowerSection} colSpan={colSpan} />
           {LOWER_CATEGORIES.map((meta, idx) => renderCategoryRow(meta, idx % 2 === 1))}
           {renderAutoRow(t.lowerTotal, (p) => calcLowerTotal(p.scores))}
           {renderAutoRow(t.upperTotalRepeated, (p) => calcUpperTotal(p.scores))}
-          {renderAutoRow(t.grandTotal, (p) => calcGrandTotal(p.scores), true, () => !!isGameOver, true)}
+          {renderAutoRow(t.grandTotal, (p) => calcGrandTotal(p.scores), false, () => !!isGameOver, true)}
         </tbody>
       </table>
       </div>

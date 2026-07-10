@@ -65,6 +65,7 @@ const en: Translations = {
   crossOutHint: 'Hold to cross out',
   enterScore: 'Enter score (0–30)',
   allEyes: 'Count all pips',
+  countAllOf: (n) => `Count all ${n}s`,
   clear: 'Clear',
   backspace: 'Backspace',
 

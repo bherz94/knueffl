@@ -26,7 +26,7 @@ type Tab = 'games' | 'leaderboard'
 const GAMES_PAGE = 30
 
 const PLAYER_COLORS = [
-  'bg-indigo-500',
+  'bg-teal-500',
   'bg-rose-500',
   'bg-emerald-500',
   'bg-amber-500',
@@ -108,7 +108,7 @@ export function HistoryModal({ onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" onClick={onClose}>
       <div
-        className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[80vh]"
+        className="w-full max-w-sm bg-white dark:bg-zinc-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-zinc-700 flex flex-col max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -116,18 +116,18 @@ export function HistoryModal({ onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-sm"
+            className="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-500 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-600 transition-colors text-sm"
             aria-label={t.cancel}
           >
             ✕
           </button>
           <div className="text-center mb-4">
             <div className="text-3xl mb-1">🏆</div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.historyTitle}</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">{t.historyTitle}</h2>
           </div>
 
           {/* Top tabs */}
-          <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-700/60">
+          <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-zinc-700/60">
             {(['games', 'leaderboard'] as const).map((key) => (
               <button
                 key={key}
@@ -136,8 +136,8 @@ export function HistoryModal({ onClose }: Props) {
                 className={[
                   'flex-1 py-2 rounded-lg text-sm font-semibold transition',
                   tab === key
-                    ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200',
+                    ? 'bg-white dark:bg-zinc-800 text-teal-600 dark:text-teal-500 shadow-sm'
+                    : 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200',
                 ].join(' ')}
               >
                 {key === 'games' ? t.recentGames : t.leaderboard}
@@ -149,7 +149,7 @@ export function HistoryModal({ onClose }: Props) {
         {/* Body */}
         <div className="overflow-y-auto px-4 pb-2 flex flex-col gap-3">
           {records.length === 0 ? (
-            <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-10">{t.noGamesYet}</p>
+            <p className="text-sm text-slate-400 dark:text-zinc-500 text-center py-10">{t.noGamesYet}</p>
           ) : tab === 'games' ? (
             <>
             {visibleGames.map((g) => {
@@ -163,15 +163,15 @@ export function HistoryModal({ onClose }: Props) {
                 onClick={() => hasBoard && setBoardRecord(g)}
                 title={hasBoard ? t.viewGameBoard : undefined}
                 className={[
-                  'w-full text-left rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/40 p-3 transition-colors',
-                  hasBoard ? 'hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer' : 'cursor-default',
+                  'w-full text-left rounded-2xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-700/40 p-3 transition-colors',
+                  hasBoard ? 'hover:bg-slate-100 dark:hover:bg-zinc-700 cursor-pointer' : 'cursor-default',
                 ].join(' ')}
               >
                 <div className="flex items-center justify-between mb-2 px-1">
-                  <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                  <span className="text-xs font-medium text-slate-400 dark:text-zinc-500">
                     {fmtDate(g.finishedAt)}
                   </span>
-                  {hasBoard && <span className="text-slate-300 dark:text-slate-500 text-sm">›</span>}
+                  {hasBoard && <span className="text-slate-300 dark:text-zinc-500 text-sm">›</span>}
                 </div>
                 <div className="flex flex-col gap-1">
                   {g.results.map((r, i) => {
@@ -189,7 +189,7 @@ export function HistoryModal({ onClose }: Props) {
                       >
                         <span className={[
                           'text-xs font-bold w-6 text-center',
-                          isFirst ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500',
+                          isFirst ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-zinc-500',
                         ].join(' ')}>
                           {t.place(r.place)}
                         </span>
@@ -202,11 +202,11 @@ export function HistoryModal({ onClose }: Props) {
                         />
                         <span className={[
                           'flex-1 text-sm font-medium truncate',
-                          deleted ? 'italic text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200',
+                          deleted ? 'italic text-slate-400 dark:text-zinc-500' : 'text-slate-700 dark:text-zinc-200',
                         ].join(' ')}>
                           {displayName}{isFirst && ' 👑'}
                         </span>
-                        <span className="text-sm font-bold tabular-nums text-slate-600 dark:text-slate-300">
+                        <span className="text-sm font-bold tabular-nums text-slate-600 dark:text-zinc-300">
                           {t.points(r.total)}
                         </span>
                       </div>
@@ -220,7 +220,7 @@ export function HistoryModal({ onClose }: Props) {
               <button
                 type="button"
                 onClick={() => setVisibleCount((n) => n + GAMES_PAGE)}
-                className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-zinc-600 text-slate-600 dark:text-zinc-300 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors"
               >
                 {t.showMore(games.length - visibleCount)}
               </button>
@@ -229,7 +229,7 @@ export function HistoryModal({ onClose }: Props) {
           ) : (
             <>
               {/* Metric sub-tabs */}
-              <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-700/60">
+              <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-zinc-700/60">
                 {metricTabs.map(({ key, label }) => (
                   <button
                     key={key}
@@ -238,8 +238,8 @@ export function HistoryModal({ onClose }: Props) {
                     className={[
                       'flex-1 py-1.5 rounded-lg text-xs font-semibold transition',
                       metric === key
-                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200',
+                        ? 'bg-white dark:bg-zinc-800 text-teal-600 dark:text-teal-500 shadow-sm'
+                        : 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200',
                     ].join(' ')}
                   >
                     {label}
@@ -248,7 +248,7 @@ export function HistoryModal({ onClose }: Props) {
               </div>
 
               {ranked.length === 0 ? (
-                <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-8">{t.noGamesYet}</p>
+                <p className="text-sm text-slate-400 dark:text-zinc-500 text-center py-8">{t.noGamesYet}</p>
               ) : (
                 ranked.map((s, i) => {
                   const rank = i + 1
@@ -269,17 +269,17 @@ export function HistoryModal({ onClose }: Props) {
                         'w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors',
                         rank === 1
                           ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-500/50'
-                          : 'bg-slate-50 dark:bg-slate-700/40 border-slate-200 dark:border-slate-600',
+                          : 'bg-slate-50 dark:bg-zinc-700/40 border-slate-200 dark:border-zinc-600',
                         openable
                           ? rank === 1
                             ? 'hover:bg-amber-100 dark:hover:bg-amber-900/30 cursor-pointer'
-                            : 'hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer'
+                            : 'hover:bg-slate-100 dark:hover:bg-zinc-700 cursor-pointer'
                           : 'cursor-default',
                       ].join(' ')}
                     >
                       <span className={[
                         'text-sm font-bold w-6 text-center',
-                        rank === 1 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500',
+                        rank === 1 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-zinc-500',
                       ].join(' ')}>
                         {rank}
                       </span>
@@ -291,13 +291,13 @@ export function HistoryModal({ onClose }: Props) {
                         textClass="text-xs"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{s.name}</div>
-                        <div className="text-xs text-slate-400 dark:text-slate-500">{t.gamesPlayedCount(s.gamesPlayed)}</div>
+                        <div className="text-sm font-semibold text-slate-700 dark:text-zinc-200 truncate">{s.name}</div>
+                        <div className="text-xs text-slate-400 dark:text-zinc-500">{t.gamesPlayedCount(s.gamesPlayed)}</div>
                       </div>
-                      <span className="text-base font-bold tabular-nums text-slate-800 dark:text-slate-100">
+                      <span className="text-base font-bold tabular-nums text-slate-800 dark:text-zinc-100">
                         {metric === 'wins' ? value : t.points(value)}
                       </span>
-                      {openable && <span className="text-slate-300 dark:text-slate-500 text-sm">›</span>}
+                      {openable && <span className="text-slate-300 dark:text-zinc-500 text-sm">›</span>}
                     </button>
                   )
                 })
@@ -324,7 +324,7 @@ export function HistoryModal({ onClose }: Props) {
             <button
               type="button"
               onClick={() => setConfirmClear(true)}
-              className="w-full py-2 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-medium text-xs hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+              className="w-full py-2 rounded-xl border border-slate-200 dark:border-zinc-600 text-slate-500 dark:text-zinc-400 font-medium text-xs hover:bg-slate-50 dark:hover:bg-zinc-700 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
             >
               {t.clearHistory}
             </button>
@@ -343,19 +343,19 @@ export function HistoryModal({ onClose }: Props) {
             onClick={() => setConfirmClear(false)}
           >
             <div
-              className="w-full max-w-xs bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-4"
+              className="w-full max-w-xs bg-white dark:bg-zinc-800 rounded-2xl shadow-xl border border-slate-200 dark:border-zinc-700 p-6 flex flex-col gap-4"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-center">
                 <div className="text-3xl mb-2">🗑️</div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{t.clearHistoryTitle}</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t.clearHistoryConfirm}</p>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">{t.clearHistoryTitle}</h2>
+                <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">{t.clearHistoryConfirm}</p>
               </div>
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => setConfirmClear(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-zinc-600 transition-colors"
                 >
                   {t.cancel}
                 </button>

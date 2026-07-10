@@ -69,15 +69,15 @@ export function ScoreCell({ cell, isActive, isSelected, isViable, isCorrectable,
     : undefined
 
   function getCellClass() {
-    if (isScored) return 'bg-slate-100 dark:bg-slate-600/60 border border-slate-300 dark:border-slate-500 text-slate-800 dark:text-slate-100 cursor-default'
-    if (isCrossed) return 'bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-600 cursor-default'
+    if (isScored) return 'bg-slate-100 dark:bg-zinc-600/60 border border-slate-300 dark:border-zinc-500 text-slate-800 dark:text-zinc-100 cursor-default'
+    if (isCrossed) return 'bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-600 cursor-default'
     // Correction target: empty cell in the player being corrected (Task 18)
     if (isCorrectable) return 'bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-500 dark:border-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 cursor-pointer'
-    if (!isActive) return 'bg-white dark:bg-slate-700 border border-dashed border-slate-200 dark:border-slate-600 cursor-default'
-    if (isSelected) return 'bg-emerald-100 dark:bg-emerald-900/40 border-2 border-emerald-500 dark:border-emerald-400 cursor-pointer'
+    if (!isActive) return 'bg-white dark:bg-zinc-700 border border-dashed border-slate-200 dark:border-zinc-600 cursor-default'
+    if (isSelected) return 'bg-emerald-100 dark:bg-emerald-900/40 border-2 border-emerald-500 dark:border-emerald-500 cursor-pointer'
     if (pressing) return 'border-2 border-emerald-400 dark:border-emerald-500 cursor-pointer'
-    if (isViable) return 'bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-500 dark:border-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 cursor-pointer'
-    return 'bg-white dark:bg-slate-700 border-2 border-indigo-400 dark:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer'
+    if (isViable) return 'bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-500 dark:border-emerald-500 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 cursor-pointer'
+    return 'bg-white dark:bg-zinc-700 border-2 border-teal-400 dark:border-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/30 cursor-pointer'
   }
 
   return (
@@ -120,7 +120,7 @@ export function ScoreCell({ cell, isActive, isSelected, isViable, isCorrectable,
       className={`h-10 w-full flex items-center justify-center text-sm font-semibold rounded select-none ${getCellClass()}`}
     >
       {isScored && <span>{scored}</span>}
-      {isCrossed && <span className="text-slate-400 dark:text-slate-500 text-base leading-none">✕</span>}
+      {isCrossed && <span className="text-slate-400 dark:text-zinc-500 text-base leading-none">✕</span>}
     </button>
   )
 }
