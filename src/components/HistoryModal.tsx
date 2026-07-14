@@ -26,10 +26,10 @@ type Tab = 'games' | 'leaderboard'
 const GAMES_PAGE = 30
 
 const PLAYER_COLORS = [
-  'bg-teal-500',
+  'bg-primary-500',
   'bg-rose-500',
   'bg-emerald-500',
-  'bg-amber-500',
+  'bg-secondary-500',
   'bg-sky-500',
   'bg-purple-500',
 ]
@@ -136,7 +136,7 @@ export function HistoryModal({ onClose }: Props) {
                 className={[
                   'flex-1 py-2 rounded-lg text-sm font-semibold transition',
                   tab === key
-                    ? 'bg-white dark:bg-zinc-800 text-teal-600 dark:text-teal-500 shadow-sm'
+                    ? 'bg-white dark:bg-zinc-800 text-primary-600 dark:text-primary-500 shadow-sm'
                     : 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200',
                 ].join(' ')}
               >
@@ -184,12 +184,12 @@ export function HistoryModal({ onClose }: Props) {
                         key={`${r.name}-${i}`}
                         className={[
                           'flex items-center gap-2 px-2 py-1.5 rounded-lg',
-                          isFirst ? 'bg-amber-50 dark:bg-amber-900/20' : '',
+                          isFirst ? 'bg-secondary-50 dark:bg-secondary-900/20' : '',
                         ].join(' ')}
                       >
                         <span className={[
                           'text-xs font-bold w-6 text-center',
-                          isFirst ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-zinc-500',
+                          isFirst ? 'text-secondary-600 dark:text-secondary-400' : 'text-slate-400 dark:text-zinc-500',
                         ].join(' ')}>
                           {t.place(r.place)}
                         </span>
@@ -238,7 +238,7 @@ export function HistoryModal({ onClose }: Props) {
                     className={[
                       'flex-1 py-1.5 rounded-lg text-xs font-semibold transition',
                       metric === key
-                        ? 'bg-white dark:bg-zinc-800 text-teal-600 dark:text-teal-500 shadow-sm'
+                        ? 'bg-white dark:bg-zinc-800 text-primary-600 dark:text-primary-500 shadow-sm'
                         : 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200',
                     ].join(' ')}
                   >
@@ -268,18 +268,18 @@ export function HistoryModal({ onClose }: Props) {
                       className={[
                         'w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors',
                         rank === 1
-                          ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-500/50'
+                          ? 'bg-secondary-50 dark:bg-secondary-900/20 border-secondary-300 dark:border-secondary-500/50'
                           : 'bg-slate-50 dark:bg-zinc-700/40 border-slate-200 dark:border-zinc-600',
                         openable
                           ? rank === 1
-                            ? 'hover:bg-amber-100 dark:hover:bg-amber-900/30 cursor-pointer'
+                            ? 'hover:bg-secondary-100 dark:hover:bg-secondary-900/30 cursor-pointer'
                             : 'hover:bg-slate-100 dark:hover:bg-zinc-700 cursor-pointer'
                           : 'cursor-default',
                       ].join(' ')}
                     >
                       <span className={[
                         'text-sm font-bold w-6 text-center',
-                        rank === 1 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-zinc-500',
+                        rank === 1 ? 'text-secondary-600 dark:text-secondary-400' : 'text-slate-400 dark:text-zinc-500',
                       ].join(' ')}>
                         {rank}
                       </span>
@@ -315,7 +315,7 @@ export function HistoryModal({ onClose }: Props) {
                 seedDebugHistory()
                 setNonce((n) => n + 1)
               }}
-              className="w-full py-2 rounded-xl border border-dashed border-amber-400 dark:border-amber-500/60 text-amber-600 dark:text-amber-400 font-medium text-xs hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+              className="w-full py-2 rounded-xl border border-dashed border-secondary-400 dark:border-secondary-500/60 text-secondary-600 dark:text-secondary-400 font-medium text-xs hover:bg-secondary-50 dark:hover:bg-secondary-900/20 transition-colors"
             >
               🐞 Seed 10 debug games (2–6 players)
             </button>

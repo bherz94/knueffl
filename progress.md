@@ -376,3 +376,43 @@ A profile can no longer be assigned to two player slots in the same game.
 - `src/components/SetupScreen.tsx`: the `<ProfilePickerModal>` now receives `disabledProfileIds` = the `profileId`s of all slots except the one being edited (filtered to slots that actually have a `profileId`). The slot's own profile stays selectable.
 - i18n: added `profileInGame` (types + de + en) — DE „im Spiel", EN „in game".
 - Build passes (`npm run build`).
+
+## TASK 47 — Prebuilt color themes + custom color picker
+
+- `src/index.css`: replaced the dead `@theme` color tokens with full 11-stop `--color-primary-*` (teal) and `--color-secondary-*` (amber) ramps, making `bg-primary-*` / `text-secondary-*` etc. valid utilities whose defaults match the original palette.
+- Refactored all accent utilities across `src/**/*.tsx` (171 occurrences): `teal-*` → `primary-*` (126), `amber-*` → `secondary-*` (45), including the player-disc color arrays in `PlayerAvatar.tsx` / `HistoryModal.tsx` (so discs now follow the theme).
+- New `src/utils/themeColors.ts`: `hexToOklch` (sRGB→OKLab, no deps), `buildRamp`, reference L/C curves, `PRESETS` (teal/indigo/rose), `applyColorTheme` (sets/clears inline `--color-primary-*`, `--color-secondary-*`, and both `--color-slate-*`+`--color-zinc-*` for neutral tint), plus `resolveSpec`/`effectiveHex` helpers. Default preset applies zero overrides → current look untouched.
+- `src/hooks/useTheme.tsx`: extended the provider with `colorTheme` state, persistence to `Knueffl-colors`, and `setPreset` / `setCustomColor` (switches to `custom`, seeding all roles) / `resetColors`; applies the resolved spec on mount and on change.
+- UI: added a **Colors** section (3 preset swatch chips + Customize button) to the settings popover in `src/components/TopBar.tsx`, and a new `src/components/ColorPickerModal.tsx` with primary/secondary/background native color inputs + reset.
+- i18n: added `colors`, `colorPreset`, `themeTeal/Indigo/Rose`, `customizeColors`, `colorPrimary/Secondary/Background`, `resetColors` to `types.ts`, `de.ts`, `en.ts`.
+- Verified: `npm run build` and `npm run lint` pass; generated CSS emits `var(--color-primary-*)`; OKLCH hue extraction confirmed correct for every preset color.
+
+## TASK 48 — Virtual dice: block scoring before rolling + clearer path back to the dice window
+
+- `src/components/GameScreen.tsx`:
+  - `handleCellClick` and `handleCross` now early-return when `virtualDice && !diceValues`, opening the dice modal instead of scoring/crossing — closes the hole where dismissing the dice modal let you enter scores manually before rolling.
+  - Turn-indicator center control (virtual mode) restyled as an explicit pill button: pre-roll it renders a pulsing white `<name> · Roll` CTA, post-roll a translucent pill with the player's name.
+  - The floating dice-result pill is now a `<button>` that reopens the dice window, with ring/hover/active feedback and a trailing 🎲 icon.
+- No new i18n strings (reused `t.rollDice`). Build + lint pass.
+
+## TASK 49 — Virtual dice: committed throw can't be redone
+
+- `src/components/DiceModal.tsx`: added an optional `committedDice` prop. When set, the modal renders a locked, read-only view (dice faces + `diceLockedHint` + Close only) with no roll/keep controls — so reopening the window can't redo the throw.
+- `src/components/GameScreen.tsx`: passes `committedDice={diceValues}` to `DiceModal`; since `advance` resets `diceValues` to null on turn change, locked mode applies only within an already-rolled turn and the next player still rolls fresh.
+- i18n: added `diceLockedHint` to `types.ts`, `de.ts`, `en.ts`. Build + lint pass.
+
+## TASK 50 — Virtual dice: pause & resume the throw (supersedes TASK 49's lock)
+
+Replaced TASK 49's read-only "locked" reopen with a resumable throw so the player can peek at the board mid-turn and continue their remaining throws.
+
+- `src/hooks/useGameState.ts`: added `diceThrowsUsed` + `diceKept` to `GameState` (initialised in `makeInitial`, reset in both `advance` branches, defaulted in the load-normaliser). Replaced `setDice` with `updateThrow(values, kept, throwsUsed)`, which keeps `diceValues` in sync with the latest dice and persists progress.
+- `src/components/DiceModal.tsx`: reworked into a resumable component — props `initialValues`/`initialKept`/`initialThrowsUsed` seed it, `onChange` persists after every roll and keep-toggle. Closing is allowed whenever not mid-animation (`canClose = !rolling`); removed the locked/`committedDice` view. Throws still cap at `MAX_THROWS` (3), so reopening can't redo a spent throw.
+- `src/components/GameScreen.tsx`: passes the persisted throw into `DiceModal` and wires `onChange={updateThrow}`; removed `handleDiceFinish`.
+- i18n: removed the now-unused `diceLockedHint` from all three locale files.
+- Build + lint pass.
+
+## TASK 51 — Floating dice pill: real dice faces + held indicator
+
+- Extracted the pip renderer into a shared `src/components/DieFace.tsx` (now with optional `sizeClass`/`pipSizeClass`); `DiceModal` imports it instead of defining its own copy.
+- `src/components/GameScreen.tsx`: the floating dice pill now renders `DieFace` tiles instead of numbers, and highlights held dice (`state.diceKept[i]`) with the same primary-fill/white-pip treatment used for kept dice in the modal (non-held = white tile, dark pips).
+- Build + lint pass.

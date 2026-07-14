@@ -54,13 +54,13 @@ export function GameEndOverlay({ players, onNewGame, onClose }: Props) {
                 className={[
                   'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
                   isFirst
-                    ? 'bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-500'
+                    ? 'bg-secondary-50 dark:bg-secondary-900/20 border-2 border-secondary-400 dark:border-secondary-500'
                     : 'bg-slate-50 dark:bg-zinc-700/50 border border-slate-200 dark:border-zinc-600',
                 ].join(' ')}
               >
                 <span className={[
                   'text-base font-bold w-8 text-center',
-                  isFirst ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-zinc-400',
+                  isFirst ? 'text-secondary-600 dark:text-secondary-400' : 'text-slate-500 dark:text-zinc-400',
                 ].join(' ')}>
                   {t.place(place)}
                 </span>
@@ -73,14 +73,14 @@ export function GameEndOverlay({ players, onNewGame, onClose }: Props) {
                 />
                 <span className={[
                   'flex-1 font-semibold text-sm',
-                  isFirst ? 'text-amber-900 dark:text-amber-100' : 'text-slate-700 dark:text-zinc-300',
+                  isFirst ? 'text-secondary-900 dark:text-secondary-100' : 'text-slate-700 dark:text-zinc-300',
                 ].join(' ')}>
                   {player.name}
                   {isFirst && <span className="ml-1">👑</span>}
                 </span>
                 <span className={[
                   'text-sm font-bold tabular-nums',
-                  isFirst ? 'text-amber-700 dark:text-amber-300' : 'text-slate-600 dark:text-zinc-400',
+                  isFirst ? 'text-secondary-700 dark:text-secondary-300' : 'text-slate-600 dark:text-zinc-400',
                 ].join(' ')}>
                   {t.points(total)}
                 </span>
@@ -92,7 +92,7 @@ export function GameEndOverlay({ players, onNewGame, onClose }: Props) {
         <button
           type="button"
           onClick={onNewGame}
-          className="w-full py-3 rounded-xl bg-teal-600 dark:bg-teal-600 text-white font-semibold text-base shadow-md hover:bg-teal-700 dark:hover:bg-teal-700 transition-all"
+          className="w-full py-3 rounded-xl bg-primary-600 dark:bg-primary-600 text-white font-semibold text-base shadow-md hover:bg-primary-700 dark:hover:bg-primary-700 transition-all"
         >
           🎲 {t.newGame}
         </button>

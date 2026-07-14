@@ -72,12 +72,12 @@ export function ScoreCell({ cell, isActive, isSelected, isViable, isCorrectable,
     if (isScored) return 'bg-slate-100 dark:bg-zinc-600/60 border border-slate-300 dark:border-zinc-500 text-slate-800 dark:text-zinc-100 cursor-default'
     if (isCrossed) return 'bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-600 cursor-default'
     // Correction target: empty cell in the player being corrected (Task 18)
-    if (isCorrectable) return 'bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-500 dark:border-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 cursor-pointer'
+    if (isCorrectable) return 'bg-secondary-50 dark:bg-secondary-900/20 border-2 border-secondary-500 dark:border-secondary-400 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 cursor-pointer'
     if (!isActive) return 'bg-white dark:bg-zinc-700 border border-dashed border-slate-200 dark:border-zinc-600 cursor-default'
     if (isSelected) return 'bg-emerald-100 dark:bg-emerald-900/40 border-2 border-emerald-500 dark:border-emerald-500 cursor-pointer'
     if (pressing) return 'border-2 border-emerald-400 dark:border-emerald-500 cursor-pointer'
     if (isViable) return 'bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-500 dark:border-emerald-500 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 cursor-pointer'
-    return 'bg-white dark:bg-zinc-700 border-2 border-teal-400 dark:border-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/30 cursor-pointer'
+    return 'bg-white dark:bg-zinc-700 border-2 border-primary-400 dark:border-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 cursor-pointer'
   }
 
   return (

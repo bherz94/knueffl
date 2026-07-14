@@ -8,7 +8,7 @@ export function SectionHeader({ label, colSpan }: Props) {
     <tr>
       <td
         colSpan={colSpan}
-        className="py-2 px-3 text-xs font-bold uppercase tracking-widest text-teal-600 dark:text-teal-500 bg-teal-50 dark:bg-teal-950/40 border-b border-teal-200 dark:border-teal-800"
+        className="py-2 px-3 text-xs font-bold uppercase tracking-widest text-primary-600 dark:text-primary-500 bg-primary-50 dark:bg-primary-950/40 border-b border-primary-200 dark:border-primary-800"
       >
         {label}
       </td>

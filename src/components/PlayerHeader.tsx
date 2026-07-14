@@ -15,7 +15,7 @@ export function PlayerHeader({ name, isActive, index, place, avatar }: Props) {
     <div
       className={[
         'flex flex-col items-center gap-1 px-1 py-2 rounded-t-lg transition-all',
-        isActive ? 'bg-teal-50 dark:bg-teal-900/30' : '',
+        isActive ? 'bg-primary-50 dark:bg-primary-900/30' : '',
       ].join(' ')}
     >
       <div className="relative">
@@ -24,7 +24,7 @@ export function PlayerHeader({ name, isActive, index, place, avatar }: Props) {
           <div className={[
             'absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center leading-none',
             place === 1
-              ? 'bg-amber-400 text-amber-900'
+              ? 'bg-secondary-400 text-secondary-900'
               : place === 2
                 ? 'bg-slate-400 text-white'
                 : place === 3
@@ -37,12 +37,12 @@ export function PlayerHeader({ name, isActive, index, place, avatar }: Props) {
       </div>
       <span className={[
         'text-xs font-semibold text-center leading-tight break-all max-w-[60px]',
-        isActive ? 'text-teal-700 dark:text-teal-400' : 'text-slate-700 dark:text-zinc-300',
+        isActive ? 'text-primary-700 dark:text-primary-400' : 'text-slate-700 dark:text-zinc-300',
       ].join(' ')}>
         {name}
       </span>
       {isActive && place === undefined && (
-        <span className="w-1.5 h-1.5 rounded-full bg-teal-500 dark:bg-teal-500" />
+        <span className="w-1.5 h-1.5 rounded-full bg-primary-500 dark:bg-primary-500" />
       )}
     </div>
   )

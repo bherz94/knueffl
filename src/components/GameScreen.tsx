@@ -14,6 +14,7 @@ import { GameEndOverlay } from './GameEndOverlay'
 import { DiceModal } from './DiceModal'
 import { MoveHistoryModal } from './MoveHistoryModal'
 import { PlayerAvatar } from './PlayerAvatar'
+import { DieFace } from './DieFace'
 
 interface Props {
   players: PlayerSetup[]
@@ -51,7 +52,7 @@ function calcPlacements(players: { name: string; scores: Parameters<typeof calcG
 
 export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props) {
   const { t } = useTranslation()
-  const { state, score, cross, correctScore, correctCross, removeMove, revertCorrection, undo, setDice, canUndo } = useGameState(players)
+  const { state, score, cross, correctScore, correctCross, removeMove, revertCorrection, undo, updateThrow, canUndo } = useGameState(players)
   const [popup, setPopup] = useState<ActivePopup>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [overlayOpen, setOverlayOpen] = useState(state.isGameOver)
@@ -128,6 +129,11 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
   }
 
   function handleCellClick(playerIndex: number, meta: CategoryMeta) {
+    // Virtual dice on but nothing rolled yet → nothing can be entered; prompt a roll.
+    if (virtualDice && !diceValues) {
+      setDiceModalOpen(true)
+      return
+    }
     if (diceValues) {
       const autoScore = getDiceAutoScore(diceValues, meta.id as ScorableCategory)
       if (autoScore !== null) {
@@ -147,6 +153,11 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
   }
 
   function handleCross(playerIndex: number, category: ScorableCategory) {
+    // Virtual dice on but nothing rolled yet → can't cross out before rolling.
+    if (virtualDice && !diceValues) {
+      setDiceModalOpen(true)
+      return
+    }
     saveScroll()
     if (correctingPlayerIndex != null) {
       correctCross(playerIndex, category, correctionSlot ?? undefined)
@@ -192,18 +203,13 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
     setCorrectionSlot(original ? { id: original.id, index, timestamp: original.timestamp } : null)
   }
 
-  function handleDiceFinish(values: number[]) {
-    setDice(values)
-    setDiceModalOpen(false)
-  }
-
   const currentPlayer = state.players[state.currentPlayerIndex]
 
   return (
     <div className="flex-1 flex flex-col bg-slate-50 dark:bg-zinc-900">
       {/* Turn indicator */}
       {(!state.isGameOver || !overlayOpen) && (
-        <div className="bg-teal-600 dark:bg-teal-700 text-white flex items-center justify-between py-2 px-4 gap-3">
+        <div className="bg-primary-600 dark:bg-primary-700 text-white flex items-center justify-between py-2 px-4 gap-3">
           {/* Left button */}
           {state.isGameOver ? (
             <button
@@ -231,7 +237,12 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
               <button
                 type="button"
                 onClick={() => setDiceModalOpen(true)}
-                className="flex items-center gap-2 text-sm font-semibold hover:opacity-80 transition-opacity"
+                className={[
+                  'flex items-center gap-2 text-sm font-semibold px-3 py-1 rounded-full border shadow-sm transition-colors',
+                  diceValues
+                    ? 'bg-white/15 hover:bg-white/25 border-white/40'
+                    : 'bg-white text-primary-700 hover:bg-primary-50 border-white animate-pulse',
+                ].join(' ')}
               >
                 🎲
                 {currentPlayer.avatar && (
@@ -244,7 +255,7 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
                     className="ring-1 ring-white/40"
                   />
                 )}
-                {currentPlayer.name}
+                {diceValues ? currentPlayer.name : `${currentPlayer.name} · ${t.rollDice}`}
               </button>
             ) : (
               <span className="inline-flex items-center gap-2 text-sm font-semibold text-center">
@@ -260,7 +271,7 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
                   />
                 )}
                 {t.currentTurn(currentPlayer.name)}
-                <span className="ml-2 text-teal-200 text-xs hidden sm:inline">{t.crossOutHint}</span>
+                <span className="ml-2 text-primary-200 text-xs hidden sm:inline">{t.crossOutHint}</span>
               </span>
             )}
           </div>
@@ -279,10 +290,10 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
 
       {/* Correction banner (Task 18) */}
       {correctingPlayerIndex != null && (
-        <div className="bg-amber-500 dark:bg-amber-600 text-white flex items-center justify-between py-2 px-4 gap-3">
+        <div className="bg-secondary-500 dark:bg-secondary-600 text-white flex items-center justify-between py-2 px-4 gap-3">
           <span className="text-sm font-semibold min-w-0">
             ✏️ {t.correctionBanner(state.players[correctingPlayerIndex]?.name ?? '')}
-            <span className="ml-2 text-amber-100 text-xs hidden sm:inline">{t.correctionHint}</span>
+            <span className="ml-2 text-secondary-100 text-xs hidden sm:inline">{t.correctionHint}</span>
           </span>
           <button
             type="button"
@@ -333,24 +344,48 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
         />
       )}
 
-      {/* Floating dice result pill — fixed bottom-center, always visible while scrolling */}
+      {/* Floating dice result pill — real dice faces; held dice (kept for the next
+          roll) are highlighted like in the modal. Tap to reopen the dice window. */}
       {diceValues && !state.isGameOver && !diceModalOpen && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-teal-700 dark:bg-teal-800 rounded-full px-3 py-1.5 shadow-xl">
-          {diceValues.map((v, i) => (
-            <span
-              key={i}
-              className="w-8 h-8 rounded-lg bg-white text-slate-800 text-sm font-bold flex items-center justify-center"
-            >
-              {v}
-            </span>
-          ))}
-        </div>
+        <button
+          type="button"
+          onClick={() => setDiceModalOpen(true)}
+          aria-label={t.rollDice}
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-primary-700 dark:bg-primary-800 rounded-full pl-2 pr-2.5 py-1.5 shadow-xl ring-2 ring-white/25 hover:bg-primary-600 dark:hover:bg-primary-700 active:scale-95 transition-all"
+        >
+          {diceValues.map((v, i) => {
+            const held = state.diceKept[i]
+            return (
+              <span
+                key={i}
+                className={[
+                  'w-9 h-9 rounded-lg flex items-center justify-center border-2',
+                  held
+                    ? 'bg-primary-500 border-white ring-1 ring-white/60'
+                    : 'bg-white border-transparent',
+                ].join(' ')}
+              >
+                <DieFace
+                  value={v}
+                  pipClass={held ? 'bg-white' : 'bg-slate-800'}
+                  sizeClass="w-7 h-7"
+                  pipSizeClass="w-1.5 h-1.5"
+                />
+              </span>
+            )
+          })}
+          <span className="ml-0.5 text-lg leading-none">🎲</span>
+        </button>
       )}
 
-      {/* Dice modal */}
+      {/* Dice modal — seeded from the turn's persisted throw so it resumes the
+          remaining throws on reopen (and can't be used to redo a spent throw). */}
       {diceModalOpen && (
         <DiceModal
-          onFinish={handleDiceFinish}
+          initialValues={diceValues ?? [1, 1, 1, 1, 1]}
+          initialKept={state.diceKept}
+          initialThrowsUsed={state.diceThrowsUsed}
+          onChange={updateThrow}
           onClose={() => setDiceModalOpen(false)}
         />
       )}

@@ -481,3 +481,38 @@ Prevent the same profile from being assigned to more than one player slot in a s
 - `SetupScreen`: when opening the picker for a slot, pass the `profileId`s of all **other** filled slots as `disabledProfileIds`, so a profile already used elsewhere in the current setup can't be picked again. The slot's own current profile is not disabled.
 - i18n: add `profileInGame` (DE „im Spiel", EN „in game").
 - Profile-less / manually-unnamed slots impose no restriction; only linked profiles are deduplicated.
+
+## TASK 47 — Prebuilt color themes + custom color picker
+
+Let users change the app's colors, both via presets and free choice, working in light and dark mode.
+
+- Refactor accent utility classes to semantic tokens: `teal-*` → `primary-*`, `amber-*` → `secondary-*` across all components. Add full 11-stop `--color-primary-*` (teal values) and `--color-secondary-*` (amber values) ramps to the `@theme` block in `src/index.css` so the defaults reproduce the original look exactly.
+- Provide **3 prebuilt themes**, selectable in the settings popover as swatch chips: **Teal** (default, = current look, applies no overrides), **Indigo** (indigo primary / pink secondary / cool-slate neutral), **Rose** (rose primary / violet secondary / warm-stone neutral).
+- Provide a **custom color picker** (`ColorPickerModal`, opened via a "Customize" button) with native color inputs for **Primary**, **Secondary**, and **Background/neutral**, applying live, plus a **Reset**.
+- Theming works by overriding Tailwind v4's `--color-*` CSS variables inline on `document.documentElement`: `primary`/`secondary` ramps for accents, and both `slate`+`zinc` overridden with one generated ramp for the neutral tint (so light and dark both retint from a single ramp). Success/danger (emerald/red) stay fixed.
+- Ramps are generated in OKLCH from the picked color's hue + chroma on fixed lightness curves (captured from Tailwind's teal/amber/slate ramps), guaranteeing readable contrast in both modes.
+- Persist the selection to `localStorage['Knueffl-colors']`; apply on mount. i18n keys added in all three locale files.
+
+## TASK 48 — Virtual dice: block scoring before rolling + clearer path back to the dice window
+
+When virtual dice is enabled:
+- No cell may be scored or crossed out before the dice have been rolled for the current turn. Tapping any cell while nothing is rolled opens the dice window instead of entering a value.
+- Make it obvious how to reopen the dice window:
+  - The turn indicator's center control is a clearly button-styled pill. Before rolling it shows an attention-drawing "<name> · <Roll>" call-to-action; after rolling it shows the current player's name.
+  - The floating dice-result pill is tappable to reopen the dice window (hover/active feedback + a 🎲 affordance).
+
+## TASK 49 — Virtual dice: committed throw can't be redone
+
+Once the dice have been rolled and committed for the current turn, reopening the dice window must not allow re-rolling — the throw persists until the player scores/crosses (which advances the turn and clears the dice). Reopening shows the committed dice read-only with a "throw is locked" hint and only a close action.
+
+## TASK 50 — Virtual dice: pause & resume the throw (supersedes TASK 49's lock)
+
+The dice window may be closed at any point after a throw (e.g. to check which categories are still open) and reopened to **continue the remaining throws** — without restarting. The throw can never be redone: throws used are capped at 3 and persist for the turn, resetting only when the turn advances (score/cross).
+
+- In-progress throw state (dice values, kept flags, throws used) is stored in game state and reset on advance.
+- Reopening the dice window resumes from the persisted state; a spent throw count cannot be reset.
+- After the first throw the board is scoreable (you may stop and score at any time); before the first throw scoring/crossing stays blocked (opens the dice window).
+
+## TASK 51 — Floating dice pill: real dice faces + held indicator
+
+The rolled dice shown in the floating pill at the top of the game screen must render as actual dice faces (pips) rather than plain numbers, and must visually indicate which dice are currently held (kept, so they won't change on the next throw) — matching the highlight used inside the dice modal.

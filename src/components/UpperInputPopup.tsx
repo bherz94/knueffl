@@ -56,8 +56,8 @@ export function UpperInputPopup({ dieIndex, onConfirm, onCancel }: Props) {
               className={[
                 'flex-1 aspect-square rounded-xl text-lg font-bold transition-all border-2',
                 selected === n
-                  ? 'bg-teal-600 dark:bg-teal-600 text-white border-teal-600 dark:border-teal-600 scale-110 shadow-md'
-                  : 'bg-white dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 border-slate-200 dark:border-zinc-600 hover:border-teal-400 dark:hover:border-teal-600',
+                  ? 'bg-primary-600 dark:bg-primary-600 text-white border-primary-600 dark:border-primary-600 scale-110 shadow-md'
+                  : 'bg-white dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 border-slate-200 dark:border-zinc-600 hover:border-primary-400 dark:hover:border-primary-600',
               ].join(' ')}
             >
               {n}
@@ -82,7 +82,7 @@ export function UpperInputPopup({ dieIndex, onConfirm, onCancel }: Props) {
             type="button"
             onClick={handleConfirm}
             disabled={selected === null}
-            className="flex-1 py-3 rounded-xl bg-teal-600 dark:bg-teal-600 text-white text-base font-semibold disabled:opacity-40 hover:bg-teal-700 dark:hover:bg-teal-700 transition"
+            className="flex-1 py-3 rounded-xl bg-primary-600 dark:bg-primary-600 text-white text-base font-semibold disabled:opacity-40 hover:bg-primary-700 dark:hover:bg-primary-700 transition"
           >
             {t.confirm}
           </button>

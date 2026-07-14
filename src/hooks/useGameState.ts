@@ -11,8 +11,15 @@ export interface GameState {
   currentPlayerIndex: number
   isGameOver: boolean
   diceValues: number[] | null
+  // In-progress throw for the current turn (virtual dice). Persisted so closing
+  // the dice window to peek at the board and reopening resumes the remaining
+  // throws instead of restarting. Reset to a fresh throw whenever the turn advances.
+  diceThrowsUsed: number
+  diceKept: boolean[]
   moveLog: MoveEntry[]
 }
+
+const FRESH_KEPT: boolean[] = [false, false, false, false, false]
 
 function makeMoveId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
@@ -62,6 +69,8 @@ function makeInitial(players: PlayerSetup[]): GameState {
     currentPlayerIndex: 0,
     isGameOver: false,
     diceValues: null,
+    diceThrowsUsed: 0,
+    diceKept: [...FRESH_KEPT],
     moveLog: [],
   }
 }
@@ -99,6 +108,8 @@ export function useGameState(players: PlayerSetup[]) {
       ...saved.state,
       gameId: saved.state.gameId ?? makeMoveId(),
       diceValues: saved.state.diceValues ?? null,
+      diceThrowsUsed: saved.state.diceThrowsUsed ?? 0,
+      diceKept: saved.state.diceKept ?? [...FRESH_KEPT],
       moveLog: saved.state.moveLog ?? [],
     }
   })
@@ -246,10 +257,10 @@ export function useGameState(players: PlayerSetup[]) {
     const moveLog = [...prev.moveLog, entry]
     const allDone = players.every((p) => isPlayerDone(p.scores))
     if (allDone) {
-      return { gameId: prev.gameId, players, currentPlayerIndex: prev.currentPlayerIndex, isGameOver: true, diceValues: null, moveLog }
+      return { gameId: prev.gameId, players, currentPlayerIndex: prev.currentPlayerIndex, isGameOver: true, diceValues: null, diceThrowsUsed: 0, diceKept: [...FRESH_KEPT], moveLog }
     }
     const next = (prev.currentPlayerIndex + 1) % players.length
-    return { gameId: prev.gameId, players, currentPlayerIndex: next, isGameOver: false, diceValues: null, moveLog }
+    return { gameId: prev.gameId, players, currentPlayerIndex: next, isGameOver: false, diceValues: null, diceThrowsUsed: 0, diceKept: [...FRESH_KEPT], moveLog }
   }
 
   function undo() {
@@ -258,8 +269,11 @@ export function useGameState(players: PlayerSetup[]) {
     setHistory((h) => h.slice(0, -1))
   }
 
-  function setDice(values: number[] | null) {
-    setState((prev) => ({ ...prev, diceValues: values }))
+  // Persist the current turn's throw as it progresses (each roll / keep-toggle) so
+  // the dice window can be closed and reopened without losing throws. `diceValues`
+  // drives the board, so it's kept in sync with the latest dice here too.
+  function updateThrow(values: number[], kept: boolean[], throwsUsed: number) {
+    setState((prev) => ({ ...prev, diceValues: values, diceKept: kept, diceThrowsUsed: throwsUsed }))
   }
 
   function reset(nextPlayers: PlayerSetup[]) {
@@ -267,5 +281,5 @@ export function useGameState(players: PlayerSetup[]) {
     setState(makeInitial(nextPlayers))
   }
 
-  return { state, score, cross, correctScore, correctCross, removeMove, revertCorrection, undo, setDice, reset, canUndo: history.length > 0 }
+  return { state, score, cross, correctScore, correctCross, removeMove, revertCorrection, undo, updateThrow, reset, canUndo: history.length > 0 }
 }

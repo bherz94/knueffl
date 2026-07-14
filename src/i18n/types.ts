@@ -7,6 +7,16 @@ export interface Translations {
   theme: string
   themeLight: string
   themeDark: string
+  colors: string
+  colorPreset: string
+  themeTeal: string
+  themeIndigo: string
+  themeRose: string
+  customizeColors: string
+  colorPrimary: string
+  colorSecondary: string
+  colorBackground: string
+  resetColors: string
   settings: string
   fontSize: string
   fontSmall: string

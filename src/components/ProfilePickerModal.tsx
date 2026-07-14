@@ -27,7 +27,7 @@ function Avatar({ profile, size = 'md' }: { profile: { name: string; avatar?: st
   const initial = profile.name.trim().slice(0, 2).toUpperCase() || '?'
   return (
     <span
-      className={`${dims} rounded-full bg-teal-600 dark:bg-teal-600 text-white font-bold flex items-center justify-center flex-shrink-0`}
+      className={`${dims} rounded-full bg-primary-600 dark:bg-primary-600 text-white font-bold flex items-center justify-center flex-shrink-0`}
     >
       {initial}
     </span>
@@ -129,12 +129,12 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-wrap gap-2">
                     {/* Camera: `capture` opens it directly on mobile; degrades to a file dialog on desktop. */}
-                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 text-sm font-semibold cursor-pointer hover:bg-teal-200 dark:hover:bg-teal-900/60 transition-colors">
+                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 text-sm font-semibold cursor-pointer hover:bg-primary-200 dark:hover:bg-primary-900/60 transition-colors">
                       📷 {t.takePhoto}
                       <input type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
                     </label>
                     {/* No `capture` → photo library / file picker. */}
-                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 text-sm font-semibold cursor-pointer hover:bg-teal-200 dark:hover:bg-teal-900/60 transition-colors">
+                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 text-sm font-semibold cursor-pointer hover:bg-primary-200 dark:hover:bg-primary-900/60 transition-colors">
                       🖼️ {t.choosePhoto}
                       <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
                     </label>
@@ -163,7 +163,7 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
                   placeholder={t.profileNamePlaceholder}
                   maxLength={20}
                   autoFocus
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700/50 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 dark:focus:ring-teal-500 focus:border-transparent transition"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700/50 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-500 focus:border-transparent transition"
                 />
               </div>
             </div>
@@ -180,7 +180,7 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
                 type="button"
                 onClick={saveDraft}
                 disabled={draft.name.trim().length === 0}
-                className="flex-1 py-2.5 rounded-xl bg-teal-600 dark:bg-teal-600 text-white font-semibold text-sm hover:bg-teal-700 dark:hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 py-2.5 rounded-xl bg-primary-600 dark:bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 dark:hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {t.save}
               </button>
@@ -231,7 +231,7 @@ export function ProfilePickerModal({ onSelect, disabledProfileIds, onClose }: Pr
               <button
                 type="button"
                 onClick={startNew}
-                className="w-full py-2.5 rounded-xl bg-teal-600 dark:bg-teal-600 text-white font-semibold text-sm hover:bg-teal-700 dark:hover:bg-teal-700 transition-colors"
+                className="w-full py-2.5 rounded-xl bg-primary-600 dark:bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 dark:hover:bg-primary-700 transition-colors"
               >
                 + {t.newProfile}
               </button>

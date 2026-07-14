@@ -109,7 +109,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
       <div className="w-full max-w-md">
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-center text-teal-600 dark:text-teal-500 mb-1">
+        <h1 className="text-4xl font-bold text-center text-primary-600 dark:text-primary-500 mb-1">
           🎲 {t.appTitle}
         </h1>
         <p className="text-center text-slate-500 dark:text-zinc-400 mb-8 text-sm">
@@ -129,7 +129,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                 type="button"
                 onClick={() => setPlayerCount(count - 1)}
                 disabled={count <= MIN_PLAYERS}
-                className="w-10 h-10 flex-shrink-0 rounded-full bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 font-bold text-lg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-teal-200 dark:hover:bg-teal-900/60 transition-colors"
+                className="w-10 h-10 flex-shrink-0 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 font-bold text-lg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary-200 dark:hover:bg-primary-900/60 transition-colors"
                 aria-label={t.removePlayer}
               >
                 −
@@ -144,8 +144,8 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                     className={[
                       'w-9 h-9 rounded-full text-sm font-semibold transition-all',
                       n === count
-                        ? 'bg-teal-600 dark:bg-teal-600 text-white shadow-md scale-110'
-                        : 'bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-zinc-300 hover:bg-teal-100 dark:hover:bg-teal-900/40',
+                        ? 'bg-primary-600 dark:bg-primary-600 text-white shadow-md scale-110'
+                        : 'bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-zinc-300 hover:bg-primary-100 dark:hover:bg-primary-900/40',
                     ].join(' ')}
                   >
                     {n}
@@ -157,7 +157,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                 type="button"
                 onClick={() => setPlayerCount(count + 1)}
                 disabled={count >= MAX_PLAYERS}
-                className="w-10 h-10 flex-shrink-0 rounded-full bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 font-bold text-lg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-teal-200 dark:hover:bg-teal-900/60 transition-colors"
+                className="w-10 h-10 flex-shrink-0 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 font-bold text-lg flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary-200 dark:hover:bg-primary-900/60 transition-colors"
                 aria-label={t.addPlayer}
               >
                 +
@@ -179,7 +179,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                     ref={(el) => { rowRefs.current[i] = el }}
                     className={[
                       'flex items-center gap-2 rounded-lg transition-[opacity,box-shadow]',
-                      dragIndex === i ? 'opacity-70 shadow-lg ring-2 ring-teal-400 dark:ring-teal-600' : '',
+                      dragIndex === i ? 'opacity-70 shadow-lg ring-2 ring-primary-400 dark:ring-primary-600' : '',
                     ].join(' ')}
                   >
                     <span
@@ -193,7 +193,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                     >
                       ⠿
                     </span>
-                    <span className="w-7 h-7 flex-shrink-0 rounded-full bg-teal-600 dark:bg-teal-600 text-white text-xs font-bold flex items-center justify-center">
+                    <span className="w-7 h-7 flex-shrink-0 rounded-full bg-primary-600 dark:bg-primary-600 text-white text-xs font-bold flex items-center justify-center">
                       {i + 1}
                     </span>
                     <button
@@ -211,7 +211,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
                           {player.avatar ? (
                             <img src={player.avatar} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
                           ) : (
-                            <span className="w-8 h-8 rounded-full bg-teal-600 dark:bg-teal-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 uppercase">
+                            <span className="w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 uppercase">
                               {player.name.trim().slice(0, 2)}
                             </span>
                           )}
@@ -252,7 +252,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
               type="checkbox"
               checked={virtualDice}
               onChange={(e) => setVirtualDice(e.target.checked)}
-              className="w-4 h-4 rounded accent-teal-600 cursor-pointer"
+              className="w-4 h-4 rounded accent-primary-600 cursor-pointer"
             />
             <span className="text-sm font-semibold text-slate-700 dark:text-zinc-300">
               🎲 {t.virtualDice}
@@ -264,7 +264,7 @@ export function SetupScreen({ onStart, initialPlayers, initialVirtualDice }: Pro
             type="button"
             onClick={handleStart}
             disabled={!allFilled}
-            className="w-full py-3 rounded-xl bg-teal-600 dark:bg-teal-600 text-white font-semibold text-base shadow-md hover:bg-teal-700 dark:hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="w-full py-3 rounded-xl bg-primary-600 dark:bg-primary-600 text-white font-semibold text-base shadow-md hover:bg-primary-700 dark:hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
             {t.startGame}
           </button>

@@ -5,14 +5,17 @@ import { useFontScale } from '../hooks/useFontScale'
 import type { FontScale } from '../hooks/useFontScale'
 import { HistoryModal } from './HistoryModal'
 import { ProfilePickerModal } from './ProfilePickerModal'
+import { ColorPickerModal } from './ColorPickerModal'
+import { PRESETS } from '../utils/themeColors'
 
 export function TopBar() {
   const { t, language, setLanguage } = useTranslation()
-  const { theme, toggleTheme } = useTheme()
+  const { theme, toggleTheme, colorTheme, setPreset } = useTheme()
   const { fontScale, setFontScale } = useFontScale()
   const [open, setOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [profilesOpen, setProfilesOpen] = useState(false)
+  const [colorsOpen, setColorsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   // Close the popover on outside click / Escape
@@ -40,7 +43,7 @@ export function TopBar() {
 
   return (
     <header className="flex items-center justify-between px-4 py-2 bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-700 shadow-sm">
-      <span className="text-base font-bold text-teal-600 dark:text-teal-500">🎲 {t.appTitle}</span>
+      <span className="text-base font-bold text-primary-600 dark:text-primary-500">🎲 {t.appTitle}</span>
 
       <div className="flex items-center gap-2">
         {/* Manage profiles */}
@@ -93,7 +96,7 @@ export function TopBar() {
                     className={[
                       'flex-1 py-1.5 rounded-lg text-sm font-semibold border transition',
                       language === lang
-                        ? 'bg-teal-600 text-white border-teal-600'
+                        ? 'bg-primary-600 text-white border-primary-600'
                         : 'bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-600 hover:bg-slate-200 dark:hover:bg-zinc-600',
                     ].join(' ')}
                   >
@@ -115,7 +118,7 @@ export function TopBar() {
                     className={[
                       'flex-1 py-1.5 rounded-lg text-sm font-semibold border transition',
                       theme === mode
-                        ? 'bg-teal-600 text-white border-teal-600'
+                        ? 'bg-primary-600 text-white border-primary-600'
                         : 'bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-600 hover:bg-slate-200 dark:hover:bg-zinc-600',
                     ].join(' ')}
                   >
@@ -123,6 +126,46 @@ export function TopBar() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Colors */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wide">{t.colors}</span>
+              <div className="flex gap-2">
+                {PRESETS.map((preset) => {
+                  const active = colorTheme.preset === preset.id
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => setPreset(preset.id)}
+                      title={presetLabel(preset.id)}
+                      aria-label={presetLabel(preset.id)}
+                      className={[
+                        'flex-1 h-9 rounded-lg border-2 transition flex items-center justify-center',
+                        active
+                          ? 'border-slate-800 dark:border-white'
+                          : 'border-slate-200 dark:border-zinc-600 hover:border-slate-400 dark:hover:border-zinc-400',
+                      ].join(' ')}
+                      style={{ backgroundColor: preset.swatch }}
+                    >
+                      {active && <span className="text-white text-sm drop-shadow">✓</span>}
+                    </button>
+                  )
+                })}
+              </div>
+              <button
+                type="button"
+                onClick={() => { setColorsOpen(true); setOpen(false) }}
+                className={[
+                  'py-1.5 rounded-lg text-sm font-semibold border transition',
+                  colorTheme.preset === 'custom'
+                    ? 'bg-primary-600 text-white border-primary-600'
+                    : 'bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-600 hover:bg-slate-200 dark:hover:bg-zinc-600',
+                ].join(' ')}
+              >
+                🎨 {t.customizeColors}
+              </button>
             </div>
 
             {/* Font size */}
@@ -137,7 +180,7 @@ export function TopBar() {
                     className={[
                       'flex-1 py-1.5 rounded-lg text-sm font-semibold border transition',
                       fontScale === opt.key
-                        ? 'bg-teal-600 text-white border-teal-600'
+                        ? 'bg-primary-600 text-white border-primary-600'
                         : 'bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-600 hover:bg-slate-200 dark:hover:bg-zinc-600',
                     ].join(' ')}
                   >
@@ -154,6 +197,13 @@ export function TopBar() {
       {historyOpen && <HistoryModal onClose={() => setHistoryOpen(false)} />}
       {/* No onSelect → management mode (edit/create/delete). Edits propagate live. */}
       {profilesOpen && <ProfilePickerModal onClose={() => setProfilesOpen(false)} />}
+      {colorsOpen && <ColorPickerModal onClose={() => setColorsOpen(false)} />}
     </header>
   )
+
+  function presetLabel(id: string): string {
+    if (id === 'indigo') return t.themeIndigo
+    if (id === 'rose') return t.themeRose
+    return t.themeTeal
+  }
 }

@@ -59,7 +59,7 @@ export function FreeInputPopup({ onConfirm, onCancel }: Props) {
   const keypadBtn =
     'h-14 rounded-xl text-xl font-bold transition-all border-2 bg-white dark:bg-zinc-700 ' +
     'text-slate-700 dark:text-zinc-200 border-slate-200 dark:border-zinc-600 ' +
-    'hover:border-teal-400 dark:hover:border-teal-600 active:scale-95 select-none'
+    'hover:border-primary-400 dark:hover:border-primary-600 active:scale-95 select-none'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onCancel}>
@@ -116,7 +116,7 @@ export function FreeInputPopup({ onConfirm, onCancel }: Props) {
             type="button"
             onClick={handleConfirm}
             disabled={!isValid}
-            className="flex-1 py-3 rounded-xl bg-teal-600 dark:bg-teal-600 text-white text-base font-semibold disabled:opacity-40 hover:bg-teal-700 dark:hover:bg-teal-700 transition"
+            className="flex-1 py-3 rounded-xl bg-primary-600 dark:bg-primary-600 text-white text-base font-semibold disabled:opacity-40 hover:bg-primary-700 dark:hover:bg-primary-700 transition"
           >
             {t.confirm}
           </button>

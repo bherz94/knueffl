@@ -92,7 +92,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
         {players.map((player, pi) => (
           <td key={pi} className={[
             'px-1 py-1 border-b border-slate-100 dark:border-zinc-800',
-            pi === activeIndex ? 'bg-teal-50/60 dark:bg-teal-900/10' : '',
+            pi === activeIndex ? 'bg-primary-50/60 dark:bg-primary-900/10' : '',
           ].join(' ')}>
             <ScoreCell
               cell={player.scores[meta.id]}
@@ -122,7 +122,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
     showWinner = false,
   ) {
     return (
-      <tr className={highlight ? 'bg-teal-50/40 dark:bg-teal-900/10' : 'bg-slate-50 dark:bg-zinc-800/30'}>
+      <tr className={highlight ? 'bg-primary-50/40 dark:bg-primary-900/10' : 'bg-slate-50 dark:bg-zinc-800/30'}>
         <td className="sticky left-0 z-10 bg-inherit px-3 py-1 border-b border-slate-100 dark:border-zinc-800">
           <span className="text-xs font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wide whitespace-nowrap">
             {label}
@@ -131,7 +131,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
         {players.map((player, pi) => (
           <td key={pi} className={[
             'px-1 py-1 border-b border-slate-100 dark:border-zinc-800',
-            pi === activeIndex ? 'bg-teal-50/60 dark:bg-teal-900/10' : '',
+            pi === activeIndex ? 'bg-primary-50/60 dark:bg-primary-900/10' : '',
           ].join(' ')}>
             <AutoCell
               value={!showFor || showFor(player) ? getValue(player) : null}
@@ -163,7 +163,7 @@ export function Scoreboard({ players, currentPlayerIndex, activeCellKey, onCellC
                 key={i}
                 className={[
                   'px-1 py-1 border-b-2 border-slate-200 dark:border-zinc-700',
-                  i === activeIndex ? 'bg-teal-50/60 dark:bg-teal-900/10' : 'bg-white dark:bg-zinc-900',
+                  i === activeIndex ? 'bg-primary-50/60 dark:bg-primary-900/10' : 'bg-white dark:bg-zinc-900',
                 ].join(' ')}
               >
                 {onHeaderClick ? (

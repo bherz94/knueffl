@@ -42,7 +42,7 @@ export function MoveHistoryModal({ playerName, playerIndex, avatar, moves, onSel
                 key={m.id}
                 type="button"
                 onClick={() => onSelectEntry(m.id)}
-                className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700/50 hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors text-left"
+                className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-slate-200 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-700/50 hover:border-secondary-400 dark:hover:border-secondary-500 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 transition-colors text-left"
               >
                 <span className="text-sm font-semibold text-slate-800 dark:text-zinc-200">
                   {categoryLabel(t, m.category)}

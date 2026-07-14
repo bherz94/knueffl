@@ -3,32 +3,33 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary: #3b82f6;
-  --color-primary-dark: #60a5fa;
+  /* Semantic accent ramps. Defaults reproduce the original palette exactly
+     (primary = teal, secondary = amber). Themes/the color picker override
+     these --color-primary-* / --color-secondary-* variables at runtime on
+     document.documentElement (see src/utils/themeColors.ts). */
+  --color-primary-50: oklch(98.4% 0.014 180.72);
+  --color-primary-100: oklch(95.3% 0.051 180.801);
+  --color-primary-200: oklch(91% 0.096 180.426);
+  --color-primary-300: oklch(85.5% 0.138 181.071);
+  --color-primary-400: oklch(77.7% 0.152 181.912);
+  --color-primary-500: oklch(70.4% 0.14 182.503);
+  --color-primary-600: oklch(60% 0.118 184.704);
+  --color-primary-700: oklch(51.1% 0.096 186.391);
+  --color-primary-800: oklch(43.7% 0.078 188.216);
+  --color-primary-900: oklch(38.6% 0.063 188.416);
+  --color-primary-950: oklch(27.7% 0.046 192.524);
 
-  --color-surface: #ffffff;
-  --color-surface-dark: #1c1c1f;
-
-  --color-surface-2: #f1f5f9;
-  --color-surface-2-dark: #26262a;
-
-  --color-surface-3: #e2e8f0;
-  --color-surface-3-dark: #2f2f34;
-
-  --color-text: #0f172a;
-  --color-text-dark: #e4e4e7;
-
-  --color-text-muted: #64748b;
-  --color-text-muted-dark: #a1a1aa;
-
-  --color-border: #cbd5e1;
-  --color-border-dark: #3f3f46;
-
-  --color-accent: #0d9488;
-  --color-accent-dark: #14b8a6;
-
-  --color-success: #22c55e;
-  --color-danger: #ef4444;
+  --color-secondary-50: oklch(98.7% 0.022 95.277);
+  --color-secondary-100: oklch(96.2% 0.059 95.617);
+  --color-secondary-200: oklch(92.4% 0.12 95.746);
+  --color-secondary-300: oklch(87.9% 0.169 91.605);
+  --color-secondary-400: oklch(82.8% 0.189 84.429);
+  --color-secondary-500: oklch(76.9% 0.188 70.08);
+  --color-secondary-600: oklch(66.6% 0.179 58.318);
+  --color-secondary-700: oklch(55.5% 0.163 48.998);
+  --color-secondary-800: oklch(47.3% 0.137 46.201);
+  --color-secondary-900: oklch(41.4% 0.112 45.904);
+  --color-secondary-950: oklch(27.9% 0.077 45.635);
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
