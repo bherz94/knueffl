@@ -387,6 +387,9 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
           initialThrowsUsed={state.diceThrowsUsed}
           onChange={updateThrow}
           onClose={() => setDiceModalOpen(false)}
+          playerName={currentPlayer.name}
+          playerIndex={state.currentPlayerIndex}
+          playerAvatar={currentPlayer.avatar}
         />
       )}
 

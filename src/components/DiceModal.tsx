@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from '../hooks/useLanguage'
 import { DieFace } from './DieFace'
+import { PlayerAvatar } from './PlayerAvatar'
 
 const MAX_THROWS = 3
 const ANIM_MS = 800
@@ -15,13 +16,17 @@ interface Props {
   // Persist progress after every roll / keep-toggle.
   onChange: (values: number[], kept: boolean[], throwsUsed: number) => void
   onClose: () => void
+  // The player whose turn it is to roll, shown in the header.
+  playerName: string
+  playerIndex: number
+  playerAvatar?: string
 }
 
 function rand(): number {
   return Math.floor(Math.random() * 6) + 1
 }
 
-export function DiceModal({ initialValues, initialKept, initialThrowsUsed, onChange, onClose }: Props) {
+export function DiceModal({ initialValues, initialKept, initialThrowsUsed, onChange, onClose, playerName, playerIndex, playerAvatar }: Props) {
   const { t } = useTranslation()
   const [values, setValues] = useState<number[]>(initialValues)
   const [kept, setKept] = useState<boolean[]>(initialKept)
@@ -80,10 +85,13 @@ export function DiceModal({ initialValues, initialKept, initialThrowsUsed, onCha
       >
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
-            🎲 {t.rollDice}
-          </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <PlayerAvatar name={playerName} index={playerIndex} avatar={playerAvatar} />
+            <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100 truncate">
+              {playerName}
+            </h2>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
             {hasRolled && (
               <span className="text-xs tabular-nums text-slate-500 dark:text-zinc-400">
                 {t.throwNumber(throwsUsed, MAX_THROWS)}
