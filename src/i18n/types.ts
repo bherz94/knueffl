@@ -100,6 +100,7 @@ export interface Translations {
   winner: string
   tie: string
   newGame: string
+  changeSetup: string
   place: (n: number) => string
   points: (n: number) => string
 

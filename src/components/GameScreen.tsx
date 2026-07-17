@@ -340,6 +340,7 @@ export function GameScreen({ players, virtualDice, onNewGame, onCancel }: Props)
         <GameEndOverlay
           players={state.players}
           onNewGame={onNewGame}
+          onChangeSetup={onCancel}
           onClose={() => setOverlayOpen(false)}
         />
       )}

@@ -102,6 +102,7 @@ const de: Translations = {
   winner: 'Gewinner',
   tie: 'Gleichstand',
   newGame: 'Neues Spiel',
+  changeSetup: 'Spieler ändern',
   place: (n) => `${n}.`,
   points: (n) => `${n} Punkte`,
 

@@ -516,3 +516,7 @@ The dice window may be closed at any point after a throw (e.g. to check which ca
 ## TASK 51 — Floating dice pill: real dice faces + held indicator
 
 The rolled dice shown in the floating pill at the top of the game screen must render as actual dice faces (pips) rather than plain numbers, and must visually indicate which dice are currently held (kept, so they won't change on the next throw) — matching the highlight used inside the dice modal.
+
+## TASK 52 — Game-end modal: add "Change Players" action
+
+The game-over overlay must offer a second action below "New Game" that returns to the initial setup screen, so players can be added, removed, or reordered before starting again. The current player list is preloaded into setup for editing. "New Game" (same players, rotated order) stays the primary action.

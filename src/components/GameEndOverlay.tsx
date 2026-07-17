@@ -7,10 +7,11 @@ import { PlayerAvatar } from './PlayerAvatar'
 interface Props {
   players: Player[]
   onNewGame: () => void
+  onChangeSetup: () => void
   onClose: () => void
 }
 
-export function GameEndOverlay({ players, onNewGame, onClose }: Props) {
+export function GameEndOverlay({ players, onNewGame, onChangeSetup, onClose }: Props) {
   const { t } = useTranslation()
 
   const ranked = players
@@ -95,6 +96,13 @@ export function GameEndOverlay({ players, onNewGame, onClose }: Props) {
           className="w-full py-3 rounded-xl bg-primary-600 dark:bg-primary-600 text-white font-semibold text-base shadow-md hover:bg-primary-700 dark:hover:bg-primary-700 transition-all"
         >
           🎲 {t.newGame}
+        </button>
+        <button
+          type="button"
+          onClick={onChangeSetup}
+          className="w-full mt-3 py-3 rounded-xl bg-slate-100 dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-semibold text-base hover:bg-slate-200 dark:hover:bg-zinc-600 transition-all"
+        >
+          ⚙️ {t.changeSetup}
         </button>
       </div>
     </div>

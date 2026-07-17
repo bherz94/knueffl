@@ -416,3 +416,10 @@ Replaced TASK 49's read-only "locked" reopen with a resumable throw so the playe
 - Extracted the pip renderer into a shared `src/components/DieFace.tsx` (now with optional `sizeClass`/`pipSizeClass`); `DiceModal` imports it instead of defining its own copy.
 - `src/components/GameScreen.tsx`: the floating dice pill now renders `DieFace` tiles instead of numbers, and highlights held dice (`state.diceKept[i]`) with the same primary-fill/white-pip treatment used for kept dice in the modal (non-held = white tile, dark pips).
 - Build + lint pass.
+
+## TASK 52 — Game-end modal: add "Change Players" action
+
+- `src/components/GameEndOverlay.tsx`: added a secondary "Change Players" button (⚙️) below "New Game" wired to a new `onChangeSetup` prop.
+- `src/components/GameScreen.tsx`: passes the existing `onCancel` handler as `onChangeSetup` — it clears the live game state and switches the view back to setup while preserving the current player list for editing.
+- i18n: added `changeSetup` to `types.ts`, `de.ts` ("Spieler ändern"), `en.ts` ("Change Players").
+- Build passes.

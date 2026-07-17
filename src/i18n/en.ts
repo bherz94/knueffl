@@ -102,6 +102,7 @@ const en: Translations = {
   winner: 'Winner',
   tie: 'Tie',
   newGame: 'New Game',
+  changeSetup: 'Change Players',
   place: (n: number) => {
     const map: Record<number, string> = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th' }
     return map[n] ?? `${n}th`
